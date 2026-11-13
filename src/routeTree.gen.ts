@@ -10,33 +10,283 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppRouteImport } from './routes/app'
+import { Route as FrisorRouteImport } from './routes/frisor'
+import { Route as GennemseRouteImport } from './routes/gennemse'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OplysningerRouteImport } from './routes/oplysninger'
+import { Route as TidRouteImport } from './routes/tid'
+import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as AppBehandlingerRouteImport } from './routes/app/behandlinger'
+import { Route as AppBeskederRouteImport } from './routes/app/beskeder'
+import { Route as AppIndstillingerRouteImport } from './routes/app/indstillinger'
+import { Route as AppKalenderRouteImport } from './routes/app/kalender'
+import { Route as AppMedarbejdereRouteImport } from './routes/app/medarbejdere'
+import { Route as AppMereRouteImport } from './routes/app/mere'
+import { Route as AppNotifikationerRouteImport } from './routes/app/notifikationer'
+import { Route as AppNyRouteImport } from './routes/app/ny'
+import { Route as AppSalonRouteImport } from './routes/app/salon'
+import { Route as AppTiderRouteImport } from './routes/app/tider'
+import { Route as BookingTokenRouteImport } from './routes/booking.$token'
+import { Route as ApiCronMessagesRouteImport } from './routes/api/cron/messages'
+import { Route as AppBookingIdRouteImport } from './routes/app/booking.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FrisorRoute = FrisorRouteImport.update({
+  id: '/frisor',
+  path: '/frisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GennemseRoute = GennemseRouteImport.update({
+  id: '/gennemse',
+  path: '/gennemse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OplysningerRoute = OplysningerRouteImport.update({
+  id: '/oplysninger',
+  path: '/oplysninger',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TidRoute = TidRouteImport.update({
+  id: '/tid',
+  path: '/tid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppIndexRoute = AppIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBehandlingerRoute = AppBehandlingerRouteImport.update({
+  id: '/behandlinger',
+  path: '/behandlinger',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBeskederRoute = AppBeskederRouteImport.update({
+  id: '/beskeder',
+  path: '/beskeder',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppIndstillingerRoute = AppIndstillingerRouteImport.update({
+  id: '/indstillinger',
+  path: '/indstillinger',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKalenderRoute = AppKalenderRouteImport.update({
+  id: '/kalender',
+  path: '/kalender',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMedarbejdereRoute = AppMedarbejdereRouteImport.update({
+  id: '/medarbejdere',
+  path: '/medarbejdere',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMereRoute = AppMereRouteImport.update({
+  id: '/mere',
+  path: '/mere',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotifikationerRoute = AppNotifikationerRouteImport.update({
+  id: '/notifikationer',
+  path: '/notifikationer',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNyRoute = AppNyRouteImport.update({
+  id: '/ny',
+  path: '/ny',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSalonRoute = AppSalonRouteImport.update({
+  id: '/salon',
+  path: '/salon',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTiderRoute = AppTiderRouteImport.update({
+  id: '/tider',
+  path: '/tider',
+  getParentRoute: () => AppRoute,
+} as any)
+const BookingTokenRoute = BookingTokenRouteImport.update({
+  id: '/booking/$token',
+  path: '/booking/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCronMessagesRoute = ApiCronMessagesRouteImport.update({
+  id: '/api/cron/messages',
+  path: '/api/cron/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppBookingIdRoute = AppBookingIdRouteImport.update({
+  id: '/booking/$id',
+  path: '/booking/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/frisor': typeof FrisorRoute
+  '/gennemse': typeof GennemseRoute
+  '/login': typeof LoginRoute
+  '/oplysninger': typeof OplysningerRoute
+  '/tid': typeof TidRoute
+  '/app/behandlinger': typeof AppBehandlingerRoute
+  '/app/beskeder': typeof AppBeskederRoute
+  '/app/indstillinger': typeof AppIndstillingerRoute
+  '/app/kalender': typeof AppKalenderRoute
+  '/app/medarbejdere': typeof AppMedarbejdereRoute
+  '/app/mere': typeof AppMereRoute
+  '/app/notifikationer': typeof AppNotifikationerRoute
+  '/app/ny': typeof AppNyRoute
+  '/app/salon': typeof AppSalonRoute
+  '/app/tider': typeof AppTiderRoute
+  '/booking/$token': typeof BookingTokenRoute
+  '/app/': typeof AppIndexRoute
+  '/api/cron/messages': typeof ApiCronMessagesRoute
+  '/app/booking/$id': typeof AppBookingIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/frisor': typeof FrisorRoute
+  '/gennemse': typeof GennemseRoute
+  '/login': typeof LoginRoute
+  '/oplysninger': typeof OplysningerRoute
+  '/tid': typeof TidRoute
+  '/app/behandlinger': typeof AppBehandlingerRoute
+  '/app/beskeder': typeof AppBeskederRoute
+  '/app/indstillinger': typeof AppIndstillingerRoute
+  '/app/kalender': typeof AppKalenderRoute
+  '/app/medarbejdere': typeof AppMedarbejdereRoute
+  '/app/mere': typeof AppMereRoute
+  '/app/notifikationer': typeof AppNotifikationerRoute
+  '/app/ny': typeof AppNyRoute
+  '/app/salon': typeof AppSalonRoute
+  '/app/tider': typeof AppTiderRoute
+  '/booking/$token': typeof BookingTokenRoute
+  '/app': typeof AppIndexRoute
+  '/api/cron/messages': typeof ApiCronMessagesRoute
+  '/app/booking/$id': typeof AppBookingIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/frisor': typeof FrisorRoute
+  '/gennemse': typeof GennemseRoute
+  '/login': typeof LoginRoute
+  '/oplysninger': typeof OplysningerRoute
+  '/tid': typeof TidRoute
+  '/app/behandlinger': typeof AppBehandlingerRoute
+  '/app/beskeder': typeof AppBeskederRoute
+  '/app/indstillinger': typeof AppIndstillingerRoute
+  '/app/kalender': typeof AppKalenderRoute
+  '/app/medarbejdere': typeof AppMedarbejdereRoute
+  '/app/mere': typeof AppMereRoute
+  '/app/notifikationer': typeof AppNotifikationerRoute
+  '/app/ny': typeof AppNyRoute
+  '/app/salon': typeof AppSalonRoute
+  '/app/tider': typeof AppTiderRoute
+  '/booking/$token': typeof BookingTokenRoute
+  '/app/': typeof AppIndexRoute
+  '/api/cron/messages': typeof ApiCronMessagesRoute
+  '/app/booking/$id': typeof AppBookingIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/frisor'
+    | '/gennemse'
+    | '/login'
+    | '/oplysninger'
+    | '/tid'
+    | '/app/behandlinger'
+    | '/app/beskeder'
+    | '/app/indstillinger'
+    | '/app/kalender'
+    | '/app/medarbejdere'
+    | '/app/mere'
+    | '/app/notifikationer'
+    | '/app/ny'
+    | '/app/salon'
+    | '/app/tider'
+    | '/booking/$token'
+    | '/app/'
+    | '/api/cron/messages'
+    | '/app/booking/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/frisor'
+    | '/gennemse'
+    | '/login'
+    | '/oplysninger'
+    | '/tid'
+    | '/app/behandlinger'
+    | '/app/beskeder'
+    | '/app/indstillinger'
+    | '/app/kalender'
+    | '/app/medarbejdere'
+    | '/app/mere'
+    | '/app/notifikationer'
+    | '/app/ny'
+    | '/app/salon'
+    | '/app/tider'
+    | '/booking/$token'
+    | '/app'
+    | '/api/cron/messages'
+    | '/app/booking/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/frisor'
+    | '/gennemse'
+    | '/login'
+    | '/oplysninger'
+    | '/tid'
+    | '/app/behandlinger'
+    | '/app/beskeder'
+    | '/app/indstillinger'
+    | '/app/kalender'
+    | '/app/medarbejdere'
+    | '/app/mere'
+    | '/app/notifikationer'
+    | '/app/ny'
+    | '/app/salon'
+    | '/app/tider'
+    | '/booking/$token'
+    | '/app/'
+    | '/api/cron/messages'
+    | '/app/booking/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
+  FrisorRoute: typeof FrisorRoute
+  GennemseRoute: typeof GennemseRoute
+  LoginRoute: typeof LoginRoute
+  OplysningerRoute: typeof OplysningerRoute
+  TidRoute: typeof TidRoute
+  BookingTokenRoute: typeof BookingTokenRoute
+  ApiCronMessagesRoute: typeof ApiCronMessagesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +298,191 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/frisor': {
+      id: '/frisor'
+      path: '/frisor'
+      fullPath: '/frisor'
+      preLoaderRoute: typeof FrisorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gennemse': {
+      id: '/gennemse'
+      path: '/gennemse'
+      fullPath: '/gennemse'
+      preLoaderRoute: typeof GennemseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/oplysninger': {
+      id: '/oplysninger'
+      path: '/oplysninger'
+      fullPath: '/oplysninger'
+      preLoaderRoute: typeof OplysningerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tid': {
+      id: '/tid'
+      path: '/tid'
+      fullPath: '/tid'
+      preLoaderRoute: typeof TidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/': {
+      id: '/app/'
+      path: '/'
+      fullPath: '/app/'
+      preLoaderRoute: typeof AppIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/behandlinger': {
+      id: '/app/behandlinger'
+      path: '/behandlinger'
+      fullPath: '/app/behandlinger'
+      preLoaderRoute: typeof AppBehandlingerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/beskeder': {
+      id: '/app/beskeder'
+      path: '/beskeder'
+      fullPath: '/app/beskeder'
+      preLoaderRoute: typeof AppBeskederRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/indstillinger': {
+      id: '/app/indstillinger'
+      path: '/indstillinger'
+      fullPath: '/app/indstillinger'
+      preLoaderRoute: typeof AppIndstillingerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/kalender': {
+      id: '/app/kalender'
+      path: '/kalender'
+      fullPath: '/app/kalender'
+      preLoaderRoute: typeof AppKalenderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/medarbejdere': {
+      id: '/app/medarbejdere'
+      path: '/medarbejdere'
+      fullPath: '/app/medarbejdere'
+      preLoaderRoute: typeof AppMedarbejdereRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/mere': {
+      id: '/app/mere'
+      path: '/mere'
+      fullPath: '/app/mere'
+      preLoaderRoute: typeof AppMereRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/notifikationer': {
+      id: '/app/notifikationer'
+      path: '/notifikationer'
+      fullPath: '/app/notifikationer'
+      preLoaderRoute: typeof AppNotifikationerRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/ny': {
+      id: '/app/ny'
+      path: '/ny'
+      fullPath: '/app/ny'
+      preLoaderRoute: typeof AppNyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/salon': {
+      id: '/app/salon'
+      path: '/salon'
+      fullPath: '/app/salon'
+      preLoaderRoute: typeof AppSalonRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/tider': {
+      id: '/app/tider'
+      path: '/tider'
+      fullPath: '/app/tider'
+      preLoaderRoute: typeof AppTiderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/booking/$token': {
+      id: '/booking/$token'
+      path: '/booking/$token'
+      fullPath: '/booking/$token'
+      preLoaderRoute: typeof BookingTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/cron/messages': {
+      id: '/api/cron/messages'
+      path: '/api/cron/messages'
+      fullPath: '/api/cron/messages'
+      preLoaderRoute: typeof ApiCronMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/booking/$id': {
+      id: '/app/booking/$id'
+      path: '/booking/$id'
+      fullPath: '/app/booking/$id'
+      preLoaderRoute: typeof AppBookingIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppBehandlingerRoute: typeof AppBehandlingerRoute
+  AppBeskederRoute: typeof AppBeskederRoute
+  AppIndstillingerRoute: typeof AppIndstillingerRoute
+  AppKalenderRoute: typeof AppKalenderRoute
+  AppMedarbejdereRoute: typeof AppMedarbejdereRoute
+  AppMereRoute: typeof AppMereRoute
+  AppNotifikationerRoute: typeof AppNotifikationerRoute
+  AppNyRoute: typeof AppNyRoute
+  AppSalonRoute: typeof AppSalonRoute
+  AppTiderRoute: typeof AppTiderRoute
+  AppIndexRoute: typeof AppIndexRoute
+  AppBookingIdRoute: typeof AppBookingIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppBehandlingerRoute: AppBehandlingerRoute,
+  AppBeskederRoute: AppBeskederRoute,
+  AppIndstillingerRoute: AppIndstillingerRoute,
+  AppKalenderRoute: AppKalenderRoute,
+  AppMedarbejdereRoute: AppMedarbejdereRoute,
+  AppMereRoute: AppMereRoute,
+  AppNotifikationerRoute: AppNotifikationerRoute,
+  AppNyRoute: AppNyRoute,
+  AppSalonRoute: AppSalonRoute,
+  AppTiderRoute: AppTiderRoute,
+  AppIndexRoute: AppIndexRoute,
+  AppBookingIdRoute: AppBookingIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
+  FrisorRoute: FrisorRoute,
+  GennemseRoute: GennemseRoute,
+  LoginRoute: LoginRoute,
+  OplysningerRoute: OplysningerRoute,
+  TidRoute: TidRoute,
+  BookingTokenRoute: BookingTokenRoute,
+  ApiCronMessagesRoute: ApiCronMessagesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
