@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1794599272804,
+      "tag": "0000_florian_studios_booking_schema_v1",
+      "breakpoints": true
+    }
+  ]
 }
