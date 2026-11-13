@@ -1,5 +1,5 @@
 /**
- * Beskedkøens arbejder. Kaldes af Lovable Cron (POST /api/cron/messages) hvert minut.
+ * Beskedkøens arbejder. Kaldes af Lovable Cron (POST /api/public/cron/messages) hvert minut.
  *
  *  – Bookinger og beskedjobs er gemt i samme transaktion; fejl her kan aldrig annullere en booking.
  *  – claim_message_jobs låser jobs med FOR UPDATE SKIP LOCKED, så to samtidige kørsler aldrig tager

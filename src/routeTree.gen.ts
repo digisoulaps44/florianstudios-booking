@@ -28,8 +28,8 @@ import { Route as AppNyRouteImport } from './routes/app/ny'
 import { Route as AppSalonRouteImport } from './routes/app/salon'
 import { Route as AppTiderRouteImport } from './routes/app/tider'
 import { Route as BookingTokenRouteImport } from './routes/booking.$token'
-import { Route as ApiCronMessagesRouteImport } from './routes/api/cron/messages'
 import { Route as AppBookingIdRouteImport } from './routes/app/booking.$id'
+import { Route as ApiPublicCronMessagesRouteImport } from './routes/api/public/cron/messages'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -126,15 +126,15 @@ const BookingTokenRoute = BookingTokenRouteImport.update({
   path: '/booking/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCronMessagesRoute = ApiCronMessagesRouteImport.update({
-  id: '/api/cron/messages',
-  path: '/api/cron/messages',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppBookingIdRoute = AppBookingIdRouteImport.update({
   id: '/booking/$id',
   path: '/booking/$id',
   getParentRoute: () => AppRoute,
+} as any)
+const ApiPublicCronMessagesRoute = ApiPublicCronMessagesRouteImport.update({
+  id: '/api/public/cron/messages',
+  path: '/api/public/cron/messages',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -157,8 +157,8 @@ export interface FileRoutesByFullPath {
   '/app/tider': typeof AppTiderRoute
   '/booking/$token': typeof BookingTokenRoute
   '/app/': typeof AppIndexRoute
-  '/api/cron/messages': typeof ApiCronMessagesRoute
   '/app/booking/$id': typeof AppBookingIdRoute
+  '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -179,8 +179,8 @@ export interface FileRoutesByTo {
   '/app/tider': typeof AppTiderRoute
   '/booking/$token': typeof BookingTokenRoute
   '/app': typeof AppIndexRoute
-  '/api/cron/messages': typeof ApiCronMessagesRoute
   '/app/booking/$id': typeof AppBookingIdRoute
+  '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -203,8 +203,8 @@ export interface FileRoutesById {
   '/app/tider': typeof AppTiderRoute
   '/booking/$token': typeof BookingTokenRoute
   '/app/': typeof AppIndexRoute
-  '/api/cron/messages': typeof ApiCronMessagesRoute
   '/app/booking/$id': typeof AppBookingIdRoute
+  '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -228,8 +228,8 @@ export interface FileRouteTypes {
     | '/app/tider'
     | '/booking/$token'
     | '/app/'
-    | '/api/cron/messages'
     | '/app/booking/$id'
+    | '/api/public/cron/messages'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -250,8 +250,8 @@ export interface FileRouteTypes {
     | '/app/tider'
     | '/booking/$token'
     | '/app'
-    | '/api/cron/messages'
     | '/app/booking/$id'
+    | '/api/public/cron/messages'
   id:
     | '__root__'
     | '/'
@@ -273,8 +273,8 @@ export interface FileRouteTypes {
     | '/app/tider'
     | '/booking/$token'
     | '/app/'
-    | '/api/cron/messages'
     | '/app/booking/$id'
+    | '/api/public/cron/messages'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -286,7 +286,7 @@ export interface RootRouteChildren {
   OplysningerRoute: typeof OplysningerRoute
   TidRoute: typeof TidRoute
   BookingTokenRoute: typeof BookingTokenRoute
-  ApiCronMessagesRoute: typeof ApiCronMessagesRoute
+  ApiPublicCronMessagesRoute: typeof ApiPublicCronMessagesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -424,19 +424,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookingTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cron/messages': {
-      id: '/api/cron/messages'
-      path: '/api/cron/messages'
-      fullPath: '/api/cron/messages'
-      preLoaderRoute: typeof ApiCronMessagesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/app/booking/$id': {
       id: '/app/booking/$id'
       path: '/booking/$id'
       fullPath: '/app/booking/$id'
       preLoaderRoute: typeof AppBookingIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/api/public/cron/messages': {
+      id: '/api/public/cron/messages'
+      path: '/api/public/cron/messages'
+      fullPath: '/api/public/cron/messages'
+      preLoaderRoute: typeof ApiPublicCronMessagesRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -482,7 +482,7 @@ const rootRouteChildren: RootRouteChildren = {
   OplysningerRoute: OplysningerRoute,
   TidRoute: TidRoute,
   BookingTokenRoute: BookingTokenRoute,
-  ApiCronMessagesRoute: ApiCronMessagesRoute,
+  ApiPublicCronMessagesRoute: ApiPublicCronMessagesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

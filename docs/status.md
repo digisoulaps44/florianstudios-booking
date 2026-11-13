@@ -26,7 +26,7 @@ Opdateret: 13. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 - Ejer: invitér/deaktivér medarbejdere, salonindstillinger (frist, påmindelse, bookingvindue, interval, varsel), fejlede beskeder med "Send igen".
 
 **Beskeder**
-- Vedvarende kø (`message_jobs`) + arbejder (`/api/cron/messages`) med låsning (`SKIP LOCKED`), idempotens, eksponentiel backoff, permanente fejl og "afventer opsætning".
+- Vedvarende kø (`message_jobs`) + arbejder (`/api/public/cron/messages`) med låsning (`SKIP LOCKED`), idempotens, eksponentiel backoff, permanente fejl og "afventer opsætning".
 - Danske skabeloner til mail (kunde + medarbejder), WhatsApp og push.
 - Web push (RFC 8291/8292) med WebCrypto, service worker, iPhone-vejledning, håndtering af afviste tilladelser og udløbne abonnementer.
 
@@ -42,14 +42,16 @@ Opdateret: 13. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 
 | Hvad | Hvem | Hvordan |
 |---|---|---|
-| Ejerkonto | Ejer + Claude | Florian opretter konto (invitation fra Lovable Cloud → Users), derefter tildeles rollen `owner` og en medarbejderprofil. |
-| Lovable Email | Lovable + ejer | Lovable sætter app-mails op og udskifter `src/server/email.server.ts`. Afsenderdomæne under More → Emails (DNS, op til 72 t). Kræver betalt plan. |
-| Cron-job | Lovable | Job hvert minut: `POST /api/cron/messages` med `LOVABLE_CRON_SECRET`. |
-| Push-nøgler | Lovable | Secrets `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`. |
-| Linkhemmelighed | Lovable | Secret `BOOKING_LINK_SECRET` (valgfri – ellers afledes den af service-nøglen). |
+| Ejerkonto | Ejer + Claude | Florian inviteres i Lovable (More → Users), vælger adgangskode via linket; derefter tildeles rollen `owner` og en medarbejderprofil. |
+| Lukket tilmelding | Ejer | More → Users → Auth settings: slå **Disable sign-up** til (invitationer og login virker stadig). Uinviterede konti får alligevel ingen adgang. |
+| Afsenderdomæne til mail | Ejer | More → Emails → `notify.florianstudio.dk` → DNS-poster hos domæneudbyderen (op til 72 t). Derefter implementerer Lovable `sendAppEmail` i `src/server/email.server.ts`. Lovable tilføjer en obligatorisk afmeldingsfod. |
+| Push-nøgler | Ejer | `VAPID_PUBLIC_KEY` og `VAPID_PRIVATE_KEY` i Project Settings → Secrets (genereret lokalt af Claude). `VAPID_SUBJECT` er sat. |
+| Linkhemmelighed | Lovable | Secret `BOOKING_LINK_SECRET` (mindst 32 tegn; valgfri – ellers afledes den af service-nøglen). |
+| Cron-job | Lovable | Hvert minut: `POST /api/public/cron/messages` med `LOVABLE_CRON_SECRET`. Når kun den udgivne app – kræver publish. |
 | WhatsApp Business | Ejer + Lovable | Forbind connectoren (Meta Embedded Signup), opret skabelonerne i `docs/whatsapp-skabeloner.md`, byg afsender + statusmodtager, vælg projektet under Incoming messages. |
-| Stram tabelrettigheder | Lovable | Ny migration: fjern standard-grants til `anon` (RLS beskytter allerede). |
 | Data | Ejer | Arbejdstider og behandlinger for hver medarbejder (i appen). |
+
+Udført: tabelrettigheder strammet (migration `0001_tighten_booking_table_privileges`, 294 rettighedstjek verificeret af Lovable).
 
 ## Næste test
 
