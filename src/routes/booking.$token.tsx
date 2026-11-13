@@ -286,8 +286,10 @@ function MoveBooking({
     setError(undefined);
     try {
       const r = await submitReschedule({ data: { token, startsAt: slot.startsAt } });
-      if (r.ok) onMoved(formatWhen(new Date(slot.startsAt)));
-      else {
+      if (r.ok) {
+        const when = formatWhen(new Date(slot.startsAt));
+        onMoved(when.charAt(0).toLowerCase() + when.slice(1));
+      } else {
         setError(r.message);
         setSlot(undefined);
         await slots.refetch();

@@ -234,7 +234,7 @@ export function DateStrip({
 }) {
   const month = days[0] ? formatMonthYear(dateFromDay(days[0].date)) : "";
   return (
-    <div>
+    <div className="min-w-0">
       <div className="mb-3 flex items-center justify-between gap-4">
         <p className="font-display text-xl leading-7 text-text" aria-live="polite">
           {month}

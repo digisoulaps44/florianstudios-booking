@@ -48,19 +48,21 @@ function ChooseTreatment() {
   return (
     <CustomerShell
       bar={
-        <BookBar
-          summary={treatment ? treatment.name : "Ingen behandling valgt"}
-          sub={treatment ? priceLabel(treatment.minPriceOre, treatment.maxPriceOre) : undefined}
-        >
-          <Button
-            disabled={!treatment}
-            onClick={() =>
-              treatment && navigate({ to: "/frisor", search: { behandling: treatment.id } })
-            }
+        catalog.treatments.length === 0 ? undefined : (
+          <BookBar
+            summary={treatment ? treatment.name : "Ingen behandling valgt"}
+            sub={treatment ? priceLabel(treatment.minPriceOre, treatment.maxPriceOre) : undefined}
           >
-            Vælg behandling
-          </Button>
-        </BookBar>
+            <Button
+              disabled={!treatment}
+              onClick={() =>
+                treatment && navigate({ to: "/frisor", search: { behandling: treatment.id } })
+              }
+            >
+              Vælg behandling
+            </Button>
+          </BookBar>
+        )
       }
     >
       <StepHeader step={1} title="Vælg behandling." />
