@@ -8,6 +8,13 @@
       "when": 1794599272804,
       "tag": "0000_florian_studios_booking_schema_v1",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794602737141,
+      "tag": "0001_tighten_booking_table_privileges",
+      "breakpoints": true
     }
   ]
 }
