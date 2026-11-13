@@ -35,8 +35,10 @@ Opdateret: 13. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 - `src/lib/availability.test.ts` (20 tests): sommer-/vintertid (29. marts og 25. oktober 2026), arbejdstid og pauser, varigheder, buffer før og efter, ferie, blokeringer, ekstra tid, varsel, ingen dubletter ved tidsskift, telefonnumre, tokens.
 - `src/server/messages/webpush.test.ts`: kryptering dekrypteres korrekt af en uafhængig brugeragent-implementering; VAPID-JWT verificeres.
 - Databasens schema er verificeret af Lovable efter migrationen (constraint, trigger, tabeller, funktioner).
+- **Databasen direkte (13/11):** to samtidige bookinger på samme tid → én lykkes, én afvises med 23P01; booking inde i en andens buffer afvises, lige efter accepteres; gentagen idempotensnøgle giver samme booking; flyt til optaget tid afvises og originalen bevares uden historikpost; kundens aflysning inden for fristen afvises (`cutoff_passed`); ingen påmindelse for bookinger under 24 t ude; påmindelse annulleres ved aflysning.
+- **Udgivet app på mobil, 375 px (13/11, https://blank-canvas-preview.lovable.app):** alle 5 trin; ledige tider respekterer arbejdstid, pause og varsel; feltvalidering med fokus på første fejl; booking oprettet; bekræftelsesside; sikkert link viser "for sent" inden for fristen; flyt og aflys via link; cron-workeren behandler køen hvert minut og lader mail/WhatsApp/push vente med "Afventer opsætning" uden at bruge forsøg; påmindelse annulleres ved flytning tæt på tiden; cron-ruten afviser kald uden hemmelighed (401). Fund rettet: datostrimlen gjorde "Flyt tid" bredere end skærmen, stort bogstav midt i sætning, tom bundbjælke uden behandlinger. Testdata slettet.
 
-**Ikke testet endnu (kræver kørende miljø med data):** samtidige bookinger mod databasen, rolleadgang med rigtige brugere, flyt/aflys via link, påmindelser ved flyt/aflys, push på rigtige enheder, mobilvisning i appen. Se "Næste test" nedenfor.
+**Ikke testet endnu:** medarbejder- og ejerappen med rigtige konti (kræver ejerkonto), rolleadgang med flere brugere, push på rigtige enheder, mail og WhatsApp (afventer opsætning).
 
 ## Afventer ekstern opsætning
 
