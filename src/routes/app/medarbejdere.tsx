@@ -2,11 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 
-import { Button, Monogram, Notice, Spinner, TextField } from "@/components/fs/primitives";
+import { Button, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
-import { StaffPhotoEditor } from "@/components/fs/staff-photo";
+import { StaffAvatar, StaffPhotoEditor } from "@/components/fs/staff-photo";
 import { supabase } from "@/integrations/supabase/client";
-import { staffPhotoUrl } from "@/lib/staff-photo";
 import { notifySuccess } from "@/lib/notify";
 import { useMe, useStaffList, type StaffRow } from "@/lib/staff-data";
 import { inviteStaffSchema } from "@/lib/staff-schemas";
@@ -104,7 +103,7 @@ function StaffAdmin() {
                   i > 0 && "border-t border-line",
                 )}
               >
-                <Monogram name={s.display_name} src={staffPhotoUrl(s.photo_path)} />
+                <StaffAvatar name={s.display_name} photoPath={s.photo_path} />
                 <div className="min-w-0 flex-1">
                   <p
                     className={cn(

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 
 import { Button, Monogram } from "@/components/fs/primitives";
 import { notifySuccess } from "@/lib/notify";
-import { removeStaffPhoto, staffPhotoUrl, uploadStaffPhoto } from "@/lib/staff-photo";
+import { removeStaffPhoto, uploadStaffPhoto, useStaffPhotoUrl } from "@/lib/staff-photo";
 
 /** Vælg, erstat eller fjern profilfoto. Beskæres kvadratisk og komprimeres før upload. */
 export function StaffPhotoEditor({
@@ -20,6 +20,7 @@ export function StaffPhotoEditor({
   const qc = useQueryClient();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const src = useStaffPhotoUrl(photoPath);
 
   const run = async (fn: () => Promise<unknown>, ok: string, fail: string) => {
     if (busy) return;
@@ -48,7 +49,7 @@ export function StaffPhotoEditor({
 
   return (
     <div className="flex flex-wrap items-center gap-4">
-      <Monogram name={name} src={staffPhotoUrl(photoPath)} className="h-20 w-20 text-2xl" />
+      <Monogram name={name} src={src} className="h-20 w-20 text-2xl" />
       <input
         ref={input}
         type="file"
@@ -87,4 +88,9 @@ export function StaffPhotoEditor({
       </div>
     </div>
   );
+}
+
+/** Monogram med medarbejderens foto (signeret URL), ellers initialer. */
+export function StaffAvatar({ name, photoPath }: { name: string; photoPath: string | null }) {
+  return <Monogram name={name} src={useStaffPhotoUrl(photoPath)} />;
 }

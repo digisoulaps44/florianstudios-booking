@@ -1,12 +1,30 @@
 /** Medarbejderfotos: kvadratisk beskæring + komprimering i browseren, upload til bucket `staff-photos`. */
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const STAFF_PHOTO_BUCKET = "staff-photos";
 export const STAFF_PHOTO_SIZE = 512;
 
-export function staffPhotoUrl(path: string | null | undefined): string | undefined {
-  if (!path) return undefined;
-  return supabase.storage.from(STAFF_PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+/** Bucket'en er privat: signerede URL'er gælder 1 time. */
+export const STAFF_PHOTO_URL_TTL_SECONDS = 3600;
+
+/** Signeret URL til et foto for en logget-ind bruger (appen). Fornyes før udløb. */
+export function useStaffPhotoUrl(path: string | null | undefined): string | undefined {
+  const q = useQuery({
+    queryKey: ["staff-photo-url", path],
+    enabled: !!path,
+    staleTime: (STAFF_PHOTO_URL_TTL_SECONDS - 600) * 1000,
+    refetchInterval: (STAFF_PHOTO_URL_TTL_SECONDS - 600) * 1000,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from(STAFF_PHOTO_BUCKET)
+        .createSignedUrl(path!, STAFF_PHOTO_URL_TTL_SECONDS);
+      if (error) throw error;
+      return data.signedUrl;
+    },
+  });
+  return path ? q.data : undefined;
 }
 
 /** Midterste kvadrat af kildebilledet (ren matematik – testbar). */

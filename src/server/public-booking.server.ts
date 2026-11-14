@@ -185,7 +185,8 @@ export type StaffOption = {
   staffTreatmentId: string;
   staffId: string;
   name: string;
-  photoPath: string | null;
+  /** Signeret URL (1 t) – bucket'en er privat. */
+  photoUrl: string | null;
   priceOre: number;
   durationMinutes: number;
   nextAvailable: string | null; // ISO
@@ -230,10 +231,14 @@ export async function getStaffOptions(
     }),
   );
   staff.sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name, "da"));
+  const urls = await signStaffPhotos(staff.map((s) => s.photoPath));
   return {
     ok: true,
     treatmentName: offers[0]!.treatment!.name,
-    staff: staff.map(({ sort: _sort, ...s }) => s),
+    staff: staff.map(({ sort: _sort, photoPath, ...s }) => ({
+      ...s,
+      photoUrl: photoPath ? (urls.get(photoPath) ?? null) : null,
+    })),
   };
 }
 
@@ -530,3 +535,16 @@ export async function cancelByToken(input: z.output<typeof tokenSchema>) {
 }
 
 export { todayInSalon };
+
+/** Signerede URL'er (1 t) til fotos i den private bucket. Fejl giver bare initialer. */
+async function signStaffPhotos(paths: (string | null)[]): Promise<Map<string, string>> {
+  const unique = [...new Set(paths.filter((p): p is string => !!p))];
+  const out = new Map<string, string>();
+  if (unique.length === 0) return out;
+  const { data, error } = await supabaseAdmin.storage
+    .from("staff-photos")
+    .createSignedUrls(unique, 3600);
+  if (error || !data) return out;
+  for (const d of data) if (d.path && d.signedUrl && !d.error) out.set(d.path, d.signedUrl);
+  return out;
+}
