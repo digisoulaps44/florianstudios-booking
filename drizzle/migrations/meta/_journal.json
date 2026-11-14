@@ -29,6 +29,13 @@
       "when": 1794677192337,
       "tag": "0003_notification_delete_and_details_changed_event",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1794677248039,
+      "tag": "0004_gdpr_customer_search_and_anonymization",
+      "breakpoints": true
     }
   ]
 }

@@ -646,6 +646,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      anonymize_customer: {
+        Args: { p_email?: string; p_phone: string }
+        Returns: number
+      }
       cancel_booking: {
         Args: {
           p_actor: string
@@ -739,6 +743,16 @@ export type Database = {
           p_new_starts_at: string
         }
         Returns: undefined
+      }
+      search_customers: {
+        Args: { p_query: string }
+        Returns: {
+          booking_count: number
+          customer_email: string
+          customer_name: string
+          customer_phone: string
+          last_booking_at: string
+        }[]
       }
       set_booking_status: {
         Args: {
