@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>Ingen forbindelse – Florian Studios</title>
+    <!--
+      Lokal offline-side i iOS-appen (server.errorPath i capacitor.config.ts). Vises, når den
+      udgivne app ikke kan indlæses. Samme udtryk som appen: ink/bone, Playfair + Inter, radius 0.
+    -->
+    <style>
+      @font-face {
+        font-family: "Playfair Display";
+        font-style: normal;
+        font-weight: 400 900;
+        font-display: swap;
+        src: url(fonts/playfair-700.woff2) format("woff2");
+      }
+      @font-face {
+        font-family: "Inter";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: swap;
+        src: url(fonts/inter.woff2) format("woff2");
+      }
+      :root {
+        color-scheme: dark;
+        --ink: #010101;
+        --bone: #dad7d2;
+        --text-2: rgb(218 215 210 / 0.7);
+        --line: rgb(218 215 210 / 0.12);
+      }
+      * {
+        box-sizing: border-box;
+        border-radius: 0;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+        background: var(--ink);
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        background: var(--ink);
+        color: var(--bone);
+        font-family:
+          "Inter",
+          -apple-system,
+          system-ui,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -webkit-tap-highlight-color: transparent;
+        padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+          max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+      }
+      main {
+        width: 100%;
+        max-width: 28rem;
+        margin: 0 auto;
+      }
+      .eyebrow {
+        margin: 0;
+        font-size: 0.75rem;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-2);
+      }
+      h1 {
+        margin: 1rem 0 0;
+        font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+        font-weight: 700;
+        font-size: 1.875rem;
+        line-height: 1.2;
+        text-wrap: balance;
+      }
+      p.lead {
+        margin: 0.75rem 0 0;
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--text-2);
+      }
+      .actions {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--line);
+        display: grid;
+        gap: 0.75rem;
+      }
+      .btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 1.25rem;
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition:
+          transform 120ms ease-out,
+          opacity 120ms ease-out;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      .btn:active {
+        transform: scale(0.97);
+        opacity: 0.85;
+      }
+      .btn:focus-visible {
+        outline: 2px solid var(--bone);
+        outline-offset: 3px;
+      }
+      .btn-primary {
+        background: var(--bone);
+        color: var(--ink);
+        border: 0;
+      }
+      .btn-secondary {
+        background: transparent;
+        color: var(--bone);
+        border: 1px solid rgb(218 215 210 / 0.2);
+      }
+      .status {
+        min-height: 1.5rem;
+        margin: 1rem 0 0;
+        font-size: 0.875rem;
+        color: var(--text-2);
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .btn {
+          transition: none;
+        }
+        .btn:active {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Ingen forbindelse</p>
+      <h1>Appen kan ikke hente tider lige nu.</h1>
+      <p class="lead">
+        Florian Studios skal bruge internet for at vise ledige tider og kalenderen. Tjek wifi eller
+        mobildata, og prøv igen.
+      </p>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="retry">Prøv igen</button>
+        <a class="btn btn-secondary" href="tel:+4571530766">Ring til salonen</a>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+    </main>
+    <script>
+      // Skal matche PRODUCTION_URL i capacitor.config.ts (tjekkes af src/test/capacitor-config.test.ts).
+      const START_URL = "https://blank-canvas-preview.lovable.app";
+      const status = document.getElementById("status");
+      function retry() {
+        status.textContent = "Prøver igen …";
+        window.location.replace(START_URL + "/");
+      }
+      document.getElementById("retry").addEventListener("click", retry);
+      // Kommer nettet tilbage, prøver appen selv igen.
+      window.addEventListener("online", retry);
+    </script>
+  </body>
+</html>
