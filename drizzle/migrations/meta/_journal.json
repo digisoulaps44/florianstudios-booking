@@ -22,6 +22,13 @@
       "when": 1794677141026,
       "tag": "0002_staff_photo_path_and_storage_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794677192337,
+      "tag": "0003_notification_delete_and_details_changed_event",
+      "breakpoints": true
     }
   ]
 }
