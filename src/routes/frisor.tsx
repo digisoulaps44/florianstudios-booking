@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
+import { bookingSearch } from "@/lib/search-guard";
 
 import { BookBar, CustomerShell, OptionList, OptionRow, StepHeader } from "@/components/fs/booking";
 import { Button, ButtonLink, Monogram, Notice } from "@/components/fs/primitives";
@@ -9,7 +10,7 @@ import { formatDateShort, formatDuration, formatPrice, formatTime } from "@/lib/
 import { localDate } from "@/lib/tz";
 
 export const Route = createFileRoute("/frisor")({
-  validateSearch: z.object({ behandling: z.string().uuid() }),
+  ...bookingSearch(z.object({ behandling: z.string().uuid() })),
   loaderDeps: ({ search }) => ({ behandling: search.behandling }),
   loader: ({ deps }) => fetchStaffOptions({ data: { treatmentId: deps.behandling } }),
   head: () => ({ meta: [{ title: "Vælg frisør – Florian Studios" }] }),

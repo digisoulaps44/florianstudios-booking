@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
+import { bookingSearch } from "@/lib/search-guard";
 
 import {
   BookBar,
@@ -23,7 +24,7 @@ const search = z.object({
 });
 
 export const Route = createFileRoute("/gennemse")({
-  validateSearch: search,
+  ...bookingSearch(search),
   loaderDeps: ({ search }) => ({ behandling: search.behandling }),
   loader: ({ deps }) => fetchStaffOptions({ data: { treatmentId: deps.behandling } }),
   head: () => ({ meta: [{ title: "Gennemse booking – Florian Studios" }] }),

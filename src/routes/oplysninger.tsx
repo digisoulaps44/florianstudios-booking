@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
+import { bookingSearch } from "@/lib/search-guard";
 
 import { BookBar, CustomerShell, StepHeader } from "@/components/fs/booking";
 import { Button, CheckboxRow, TextField } from "@/components/fs/primitives";
@@ -9,11 +10,13 @@ import { useCustomerDraft } from "@/lib/customer-draft";
 import { formatTime } from "@/lib/format";
 
 export const Route = createFileRoute("/oplysninger")({
-  validateSearch: z.object({
-    behandling: z.string().uuid(),
-    tilbud: z.string().uuid(),
-    tid: z.string().datetime({ offset: true }),
-  }),
+  ...bookingSearch(
+    z.object({
+      behandling: z.string().uuid(),
+      tilbud: z.string().uuid(),
+      tid: z.string().datetime({ offset: true }),
+    }),
+  ),
   head: () => ({ meta: [{ title: "Dine oplysninger – Florian Studios" }] }),
   component: CustomerDetails,
 });
