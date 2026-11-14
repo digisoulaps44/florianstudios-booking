@@ -473,6 +473,7 @@ export type Database = {
           notify_email: boolean
           notify_push: boolean
           phone: string | null
+          photo_path: string | null
           sort_order: number
           updated_at: string
           user_id: string | null
@@ -487,6 +488,7 @@ export type Database = {
           notify_email?: boolean
           notify_push?: boolean
           phone?: string | null
+          photo_path?: string | null
           sort_order?: number
           updated_at?: string
           user_id?: string | null
@@ -501,6 +503,7 @@ export type Database = {
           notify_email?: boolean
           notify_push?: boolean
           phone?: string | null
+          photo_path?: string | null
           sort_order?: number
           updated_at?: string
           user_id?: string | null
