@@ -63,9 +63,10 @@ function Customers() {
       return;
     }
     setResults((r) => r?.filter((x) => x.customer_phone !== c.customer_phone));
-    notifySuccess("Kunden er anonymiseret", {
-      description: `${data ?? 0} bookinger beholdes uden navn, telefon, mail og note.`,
-    });
+    const kept = bookingsLabel(Number(data ?? 0));
+    const text = `${c.customer_name} er anonymiseret. ${kept} beholdes uden navn, telefon, mail og note.`;
+    setMsg({ tone: "success", text });
+    notifySuccess("Kunden er anonymiseret", { description: `${kept} beholdes til statistik.` });
   };
 
   return (
@@ -95,7 +96,9 @@ function Customers() {
         {loading ? <Spinner /> : null}
         {results && !loading ? (
           results.length === 0 ? (
-            <p className="text-sm text-text-2">Ingen kunder fundet.</p>
+            msg?.tone === "success" ? null : (
+              <p className="text-sm text-text-2">Ingen kunder fundet.</p>
+            )
           ) : (
             <ul className="border-y border-line">
               {results.map((c, idx) => (
@@ -110,7 +113,7 @@ function Customers() {
                       {c.customer_email ? ` · ${c.customer_email}` : ""}
                     </p>
                     <p className="text-sm text-text-muted">
-                      {c.booking_count} bookinger · seneste{" "}
+                      {bookingsLabel(c.booking_count)} · seneste{" "}
                       {formatDateShort(new Date(c.last_booking_at))}
                     </p>
                   </div>
@@ -146,4 +149,8 @@ function Customers() {
       </div>
     </>
   );
+}
+
+function bookingsLabel(n: number) {
+  return `${n} ${n === 1 ? "booking" : "bookinger"}`;
 }

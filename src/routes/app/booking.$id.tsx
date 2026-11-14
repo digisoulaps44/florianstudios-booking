@@ -141,6 +141,7 @@ function BookingDetail() {
   };
 
   const active = b.status === "confirmed";
+  const anonymized = b.customer_phone.startsWith("anon-");
   const changeStatus = async (status: "completed" | "no_show" | "confirmed", label: string) => {
     if (busy) return;
     setBusy(true);
@@ -203,10 +204,12 @@ function BookingDetail() {
         ) : null}
 
         <div className="flex flex-wrap gap-3">
-          <a href={`tel:${b.customer_phone}`} className={buttonClasses("secondary", "sm")}>
-            <Phone aria-hidden="true" className="h-4 w-4" />
-            Ring
-          </a>
+          {anonymized ? null : (
+            <a href={`tel:${b.customer_phone}`} className={buttonClasses("secondary", "sm")}>
+              <Phone aria-hidden="true" className="h-4 w-4" />
+              Ring
+            </a>
+          )}
           {b.customer_email ? (
             <a href={`mailto:${b.customer_email}`} className={buttonClasses("secondary", "sm")}>
               <Mail aria-hidden="true" className="h-4 w-4" />
@@ -227,7 +230,7 @@ function BookingDetail() {
               term: "Kontakt",
               value: (
                 <>
-                  {formatPhone(b.customer_phone)}
+                  {anonymized ? "Anonymiseret" : formatPhone(b.customer_phone)}
                   {b.customer_email ? (
                     <>
                       <br />
