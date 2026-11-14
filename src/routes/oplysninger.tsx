@@ -67,7 +67,14 @@ function CustomerDetails() {
           search: { behandling: search.behandling, tilbud: search.tilbud },
           label: "Vælg tidspunkt",
         }}
-        lede="Vi bruger dem kun til din booking."
+        lede={
+          <>
+            Vi bruger dem kun til din booking.{" "}
+            <a href="/privatliv" className="text-text underline underline-offset-4">
+              Sådan behandler vi dine data
+            </a>
+          </>
+        }
       />
       <form id="kunde" noValidate onSubmit={submit} className="mt-8 grid gap-6">
         <TextField

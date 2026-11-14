@@ -203,7 +203,12 @@ function Review() {
         />
       </div>
       <p className="mt-4 text-sm text-text-2">
-        Du kan ændre eller aflyse via linket i bekræftelsen.
+        Du kan ændre eller aflyse via linket i bekræftelsen. Ved at bekræfte accepterer du, at vi
+        gemmer dine oplysninger som beskrevet i{" "}
+        <a href="/privatliv" className="text-text underline underline-offset-4">
+          privatlivspolitikken
+        </a>
+        .
       </p>
     </CustomerShell>
   );

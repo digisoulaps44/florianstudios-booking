@@ -15,12 +15,14 @@ import { Route as FrisorRouteImport } from './routes/frisor'
 import { Route as GennemseRouteImport } from './routes/gennemse'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OplysningerRouteImport } from './routes/oplysninger'
+import { Route as PrivatlivRouteImport } from './routes/privatliv'
 import { Route as TidRouteImport } from './routes/tid'
 import { Route as AppIndexRouteImport } from './routes/app/index'
 import { Route as AppBehandlingerRouteImport } from './routes/app/behandlinger'
 import { Route as AppBeskederRouteImport } from './routes/app/beskeder'
 import { Route as AppIndstillingerRouteImport } from './routes/app/indstillinger'
 import { Route as AppKalenderRouteImport } from './routes/app/kalender'
+import { Route as AppKunderRouteImport } from './routes/app/kunder'
 import { Route as AppMedarbejdereRouteImport } from './routes/app/medarbejdere'
 import { Route as AppMereRouteImport } from './routes/app/mere'
 import { Route as AppNotifikationerRouteImport } from './routes/app/notifikationer'
@@ -61,6 +63,11 @@ const OplysningerRoute = OplysningerRouteImport.update({
   path: '/oplysninger',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivatlivRoute = PrivatlivRouteImport.update({
+  id: '/privatliv',
+  path: '/privatliv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TidRoute = TidRouteImport.update({
   id: '/tid',
   path: '/tid',
@@ -89,6 +96,11 @@ const AppIndstillingerRoute = AppIndstillingerRouteImport.update({
 const AppKalenderRoute = AppKalenderRouteImport.update({
   id: '/kalender',
   path: '/kalender',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppKunderRoute = AppKunderRouteImport.update({
+  id: '/kunder',
+  path: '/kunder',
   getParentRoute: () => AppRoute,
 } as any)
 const AppMedarbejdereRoute = AppMedarbejdereRouteImport.update({
@@ -144,11 +156,13 @@ export interface FileRoutesByFullPath {
   '/gennemse': typeof GennemseRoute
   '/login': typeof LoginRoute
   '/oplysninger': typeof OplysningerRoute
+  '/privatliv': typeof PrivatlivRoute
   '/tid': typeof TidRoute
   '/app/behandlinger': typeof AppBehandlingerRoute
   '/app/beskeder': typeof AppBeskederRoute
   '/app/indstillinger': typeof AppIndstillingerRoute
   '/app/kalender': typeof AppKalenderRoute
+  '/app/kunder': typeof AppKunderRoute
   '/app/medarbejdere': typeof AppMedarbejdereRoute
   '/app/mere': typeof AppMereRoute
   '/app/notifikationer': typeof AppNotifikationerRoute
@@ -166,11 +180,13 @@ export interface FileRoutesByTo {
   '/gennemse': typeof GennemseRoute
   '/login': typeof LoginRoute
   '/oplysninger': typeof OplysningerRoute
+  '/privatliv': typeof PrivatlivRoute
   '/tid': typeof TidRoute
   '/app/behandlinger': typeof AppBehandlingerRoute
   '/app/beskeder': typeof AppBeskederRoute
   '/app/indstillinger': typeof AppIndstillingerRoute
   '/app/kalender': typeof AppKalenderRoute
+  '/app/kunder': typeof AppKunderRoute
   '/app/medarbejdere': typeof AppMedarbejdereRoute
   '/app/mere': typeof AppMereRoute
   '/app/notifikationer': typeof AppNotifikationerRoute
@@ -190,11 +206,13 @@ export interface FileRoutesById {
   '/gennemse': typeof GennemseRoute
   '/login': typeof LoginRoute
   '/oplysninger': typeof OplysningerRoute
+  '/privatliv': typeof PrivatlivRoute
   '/tid': typeof TidRoute
   '/app/behandlinger': typeof AppBehandlingerRoute
   '/app/beskeder': typeof AppBeskederRoute
   '/app/indstillinger': typeof AppIndstillingerRoute
   '/app/kalender': typeof AppKalenderRoute
+  '/app/kunder': typeof AppKunderRoute
   '/app/medarbejdere': typeof AppMedarbejdereRoute
   '/app/mere': typeof AppMereRoute
   '/app/notifikationer': typeof AppNotifikationerRoute
@@ -215,11 +233,13 @@ export interface FileRouteTypes {
     | '/gennemse'
     | '/login'
     | '/oplysninger'
+    | '/privatliv'
     | '/tid'
     | '/app/behandlinger'
     | '/app/beskeder'
     | '/app/indstillinger'
     | '/app/kalender'
+    | '/app/kunder'
     | '/app/medarbejdere'
     | '/app/mere'
     | '/app/notifikationer'
@@ -237,11 +257,13 @@ export interface FileRouteTypes {
     | '/gennemse'
     | '/login'
     | '/oplysninger'
+    | '/privatliv'
     | '/tid'
     | '/app/behandlinger'
     | '/app/beskeder'
     | '/app/indstillinger'
     | '/app/kalender'
+    | '/app/kunder'
     | '/app/medarbejdere'
     | '/app/mere'
     | '/app/notifikationer'
@@ -260,11 +282,13 @@ export interface FileRouteTypes {
     | '/gennemse'
     | '/login'
     | '/oplysninger'
+    | '/privatliv'
     | '/tid'
     | '/app/behandlinger'
     | '/app/beskeder'
     | '/app/indstillinger'
     | '/app/kalender'
+    | '/app/kunder'
     | '/app/medarbejdere'
     | '/app/mere'
     | '/app/notifikationer'
@@ -284,6 +308,7 @@ export interface RootRouteChildren {
   GennemseRoute: typeof GennemseRoute
   LoginRoute: typeof LoginRoute
   OplysningerRoute: typeof OplysningerRoute
+  PrivatlivRoute: typeof PrivatlivRoute
   TidRoute: typeof TidRoute
   BookingTokenRoute: typeof BookingTokenRoute
   ApiPublicCronMessagesRoute: typeof ApiPublicCronMessagesRoute
@@ -333,6 +358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OplysningerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privatliv': {
+      id: '/privatliv'
+      path: '/privatliv'
+      fullPath: '/privatliv'
+      preLoaderRoute: typeof PrivatlivRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tid': {
       id: '/tid'
       path: '/tid'
@@ -373,6 +405,13 @@ declare module '@tanstack/react-router' {
       path: '/kalender'
       fullPath: '/app/kalender'
       preLoaderRoute: typeof AppKalenderRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/kunder': {
+      id: '/app/kunder'
+      path: '/kunder'
+      fullPath: '/app/kunder'
+      preLoaderRoute: typeof AppKunderRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/medarbejdere': {
@@ -446,6 +485,7 @@ interface AppRouteChildren {
   AppBeskederRoute: typeof AppBeskederRoute
   AppIndstillingerRoute: typeof AppIndstillingerRoute
   AppKalenderRoute: typeof AppKalenderRoute
+  AppKunderRoute: typeof AppKunderRoute
   AppMedarbejdereRoute: typeof AppMedarbejdereRoute
   AppMereRoute: typeof AppMereRoute
   AppNotifikationerRoute: typeof AppNotifikationerRoute
@@ -461,6 +501,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBeskederRoute: AppBeskederRoute,
   AppIndstillingerRoute: AppIndstillingerRoute,
   AppKalenderRoute: AppKalenderRoute,
+  AppKunderRoute: AppKunderRoute,
   AppMedarbejdereRoute: AppMedarbejdereRoute,
   AppMereRoute: AppMereRoute,
   AppNotifikationerRoute: AppNotifikationerRoute,
@@ -480,6 +521,7 @@ const rootRouteChildren: RootRouteChildren = {
   GennemseRoute: GennemseRoute,
   LoginRoute: LoginRoute,
   OplysningerRoute: OplysningerRoute,
+  PrivatlivRoute: PrivatlivRoute,
   TidRoute: TidRoute,
   BookingTokenRoute: BookingTokenRoute,
   ApiPublicCronMessagesRoute: ApiPublicCronMessagesRoute,
