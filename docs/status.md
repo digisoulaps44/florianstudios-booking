@@ -1,6 +1,6 @@
 # Status – Florian Studios booking
 
-Opdateret: 13. november 2026. Tre kategorier holdes skarpt adskilt: **implementeret**, **testet** og **afventer ekstern opsætning**.
+Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implementeret**, **testet** og **afventer ekstern opsætning**.
 
 ## Implementeret
 
@@ -38,22 +38,23 @@ Opdateret: 13. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 - **Databasen direkte (13/11):** to samtidige bookinger på samme tid → én lykkes, én afvises med 23P01; booking inde i en andens buffer afvises, lige efter accepteres; gentagen idempotensnøgle giver samme booking; flyt til optaget tid afvises og originalen bevares uden historikpost; kundens aflysning inden for fristen afvises (`cutoff_passed`); ingen påmindelse for bookinger under 24 t ude; påmindelse annulleres ved aflysning.
 - **Udgivet app på mobil, 375 px (13/11, https://blank-canvas-preview.lovable.app):** alle 5 trin; ledige tider respekterer arbejdstid, pause og varsel; feltvalidering med fokus på første fejl; booking oprettet; bekræftelsesside; sikkert link viser "for sent" inden for fristen; flyt og aflys via link; cron-workeren behandler køen hvert minut og lader mail/WhatsApp/push vente med "Afventer opsætning" uden at bruge forsøg; påmindelse annulleres ved flytning tæt på tiden; cron-ruten afviser kald uden hemmelighed (401). Fund rettet: datostrimlen gjorde "Flyt tid" bredere end skærmen, stort bogstav midt i sætning, tom bundbjælke uden behandlinger. Testdata slettet.
 
-**Ikke testet endnu:** medarbejder- og ejerappen med rigtige konti (kræver ejerkonto), rolleadgang med flere brugere, push på rigtige enheder, mail og WhatsApp (afventer opsætning).
+- **Medarbejder- og ejerappen live på mobil, 375 px (14/11, midlertidig ejerkonto):** behandling med pris, varighed og buffer; ugentlige arbejdstider med pause; ny booking fra salonen; overlap afvist af databasen; "I dag" med næste kunde, ledige huller og pause; flyt tid; gennemført og fortryd status; kundebooking giver realtime-notifikation og ulæst-mærke, notifikationen åbner bookingen og markeres læst; aflys fra salonen lægger aflysningsmail i kø; dag- og ugekalender; medarbejdersiden; salonindstillinger; fejlede beskeder. Push-nøglerne er aktive (krævede ny udgivelse), og arbejderen annullerer push uden abonnementer. Fund rettet (commit `1f1af7b`): svar på handlinger stod uden for skærmen og fokus forsvandt; salonindstillinger viste rå databasefejl; tom invitation gav generel fejl; "Behandling" manglede label; "Flyt tid"/"Aflys" tog ikke fokus; stort bogstav i "flyttet til"; interne skabelonnavne i beskedlisten; aflyste bookinger i ugevisningen kun gennemstreget. Testdata slettet.
+
+**Ikke testet endnu:** invitation af en rigtig medarbejder og rolleadgang med flere brugere (medarbejder A må ikke se B's bookinger), push på rigtige enheder, mail og WhatsApp (afventer opsætning).
 
 ## Afventer ekstern opsætning
 
 | Hvad | Hvem | Hvordan |
 |---|---|---|
-| Ejerkonto | Ejer + Claude | Florian inviteres i Lovable (More → Users), vælger adgangskode via linket; derefter tildeles rollen `owner` og en medarbejderprofil. |
+| Ejerkonto | Ejer + Claude | Midlertidig: udviklerens konto er ejer under test (medarbejderprofil "Testejer"). Når testen er færdig: Florian inviteres (More → Users eller Medarbejdere i appen), får rollen `owner`, og testkontoens roller og profil fjernes. |
 | Lukket tilmelding | Ejer | More → Users → Auth settings: slå **Disable sign-up** til (invitationer og login virker stadig). Uinviterede konti får alligevel ingen adgang. |
 | Afsenderdomæne til mail | Ejer | More → Emails → `notify.florianstudio.dk` → DNS-poster hos domæneudbyderen (op til 72 t). Derefter implementerer Lovable `sendAppEmail` i `src/server/email.server.ts`. Lovable tilføjer en obligatorisk afmeldingsfod. |
-| Push-nøgler | Ejer | `VAPID_PUBLIC_KEY` og `VAPID_PRIVATE_KEY` i Project Settings → Secrets (genereret lokalt af Claude). `VAPID_SUBJECT` er sat. |
 | Linkhemmelighed | Lovable | Secret `BOOKING_LINK_SECRET` (mindst 32 tegn; valgfri – ellers afledes den af service-nøglen). |
 | Cron-job | Lovable | Hvert minut: `POST /api/public/cron/messages` med `LOVABLE_CRON_SECRET`. Når kun den udgivne app – kræver publish. |
 | WhatsApp Business | Ejer + Lovable | Forbind connectoren (Meta Embedded Signup), opret skabelonerne i `docs/whatsapp-skabeloner.md`, byg afsender + statusmodtager, vælg projektet under Incoming messages. |
 | Data | Ejer | Arbejdstider og behandlinger for hver medarbejder (i appen). |
 
-Udført: tabelrettigheder strammet (migration `0001_tighten_booking_table_privileges`, 294 rettighedstjek verificeret af Lovable).
+Udført: tabelrettigheder strammet (migration `0001_tighten_booking_table_privileges`, 294 rettighedstjek verificeret af Lovable). Push-nøgler (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) er sat 14/11 – nye secrets kræver en ny udgivelse, før appen ser dem.
 
 ## Næste test
 
