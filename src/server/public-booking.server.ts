@@ -115,7 +115,13 @@ type OfferRow = {
   id: string;
   price_ore: number;
   duration_minutes: number;
-  staff: { id: string; display_name: string; active: boolean; sort_order: number } | null;
+  staff: {
+    id: string;
+    display_name: string;
+    active: boolean;
+    sort_order: number;
+    photo_path: string | null;
+  } | null;
   treatment: {
     id: string;
     name: string;
@@ -129,7 +135,7 @@ async function loadOffers(treatmentId?: string): Promise<OfferRow[]> {
   let q = supabaseAdmin
     .from("staff_treatments")
     .select(
-      "id, price_ore, duration_minutes, staff:staff_id(id, display_name, active, sort_order), treatment:treatment_id(id, name, description, active, sort_order)",
+      "id, price_ore, duration_minutes, staff:staff_id(id, display_name, active, sort_order, photo_path), treatment:treatment_id(id, name, description, active, sort_order)",
     )
     .eq("active", true);
   if (treatmentId) q = q.eq("treatment_id", treatmentId);
@@ -179,6 +185,7 @@ export type StaffOption = {
   staffTreatmentId: string;
   staffId: string;
   name: string;
+  photoPath: string | null;
   priceOre: number;
   durationMinutes: number;
   nextAvailable: string | null; // ISO
@@ -214,6 +221,7 @@ export async function getStaffOptions(
         staffTreatmentId: r.id,
         staffId: r.staff!.id,
         name: r.staff!.display_name,
+        photoPath: r.staff!.photo_path,
         priceOre: r.price_ore,
         durationMinutes: r.duration_minutes,
         nextAvailable: next,

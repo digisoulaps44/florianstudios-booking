@@ -4,8 +4,11 @@ import { useState, type FormEvent } from "react";
 
 import { Button, Monogram, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { StaffPhotoEditor } from "@/components/fs/staff-photo";
+import { supabase } from "@/integrations/supabase/client";
+import { staffPhotoUrl } from "@/lib/staff-photo";
 import { notifySuccess } from "@/lib/notify";
-import { useMe, useStaffList } from "@/lib/staff-data";
+import { useMe, useStaffList, type StaffRow } from "@/lib/staff-data";
 import { inviteStaffSchema } from "@/lib/staff-schemas";
 import { inviteStaffMember, setStaffMemberActive } from "@/lib/staff.functions";
 import { cn } from "@/lib/utils";
@@ -28,6 +31,7 @@ function StaffAdmin() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ tone: "success" | "error"; text: string }>();
   const [errors, setErrors] = useState<InviteErrors>({});
+  const [editing, setEditing] = useState<string | null>(null);
 
   if (!me.isOwner) return <Notice tone="error" title="Kun ejeren har adgang til medarbejdere." />;
 
@@ -100,7 +104,7 @@ function StaffAdmin() {
                   i > 0 && "border-t border-line",
                 )}
               >
-                <Monogram name={s.display_name} />
+                <Monogram name={s.display_name} src={staffPhotoUrl(s.photo_path)} />
                 <div className="min-w-0 flex-1">
                   <p
                     className={cn(
@@ -140,6 +144,14 @@ function StaffAdmin() {
                     >
                       Kalender
                     </Link>
+                    <button
+                      type="button"
+                      aria-expanded={editing === s.id}
+                      onClick={() => setEditing(editing === s.id ? null : s.id)}
+                      className="inline-flex min-h-11 items-center text-xs font-medium uppercase tracking-[0.18em] text-text-2 underline-offset-4 hover:text-text hover:underline"
+                    >
+                      {editing === s.id ? "Luk" : "Redigér"}
+                    </button>
                   </div>
                 </div>
                 {s.id !== me.staffId ? (
@@ -150,6 +162,13 @@ function StaffAdmin() {
                   >
                     {s.active ? "Deaktivér" : "Aktivér"}
                   </Button>
+                ) : null}
+                {editing === s.id ? (
+                  <EditStaff
+                    staff={s}
+                    onDone={() => setEditing(null)}
+                    onError={(text) => setMsg({ tone: "error", text })}
+                  />
                 ) : null}
               </li>
             ))}
@@ -198,5 +217,94 @@ function StaffAdmin() {
         </form>
       </div>
     </>
+  );
+}
+
+/** Ejeren retter en medarbejders navn, telefon og billede (RLS: ejer må opdatere alle). */
+function EditStaff({
+  staff,
+  onDone,
+  onError,
+}: {
+  staff: StaffRow;
+  onDone: () => void;
+  onError: (text: string) => void;
+}) {
+  const qc = useQueryClient();
+  const [name, setName] = useState(staff.display_name);
+  const [phone, setPhone] = useState(staff.phone ?? "");
+  const [nameError, setNameError] = useState<string>();
+  const [busy, setBusy] = useState(false);
+  const nameId = `edit-name-${staff.id}`;
+
+  const save = async (e: FormEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setNameError("Skriv et navn.");
+      document.getElementById(nameId)?.focus();
+      return;
+    }
+    if (phone.trim().length > 30) {
+      onError("Telefonnummeret er for langt.");
+      return;
+    }
+    setNameError(undefined);
+    setBusy(true);
+    const { error } = await supabase
+      .from("staff")
+      .update({ display_name: trimmed, phone: phone.trim() || null })
+      .eq("id", staff.id);
+    setBusy(false);
+    if (error) return onError("Profilen kunne ikke gemmes. Prøv igen.");
+    notifySuccess(`${trimmed} er opdateret`);
+    await qc.invalidateQueries({ queryKey: ["staff"] });
+    onDone();
+  };
+
+  return (
+    <form
+      onSubmit={save}
+      noValidate
+      className="grid w-full basis-full gap-4 border border-line p-4"
+    >
+      <StaffPhotoEditor
+        staffId={staff.id}
+        name={staff.display_name}
+        photoPath={staff.photo_path}
+        onError={onError}
+      />
+      <TextField
+        id={nameId}
+        label="Navn (vises for kunderne)"
+        autoComplete="off"
+        error={nameError}
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <TextField
+        label="Telefon"
+        type="tel"
+        inputMode="tel"
+        autoComplete="off"
+        optional
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+      />
+      <div className="flex flex-wrap gap-2">
+        <Button
+          type="submit"
+          size="sm"
+          aria-busy={busy || undefined}
+          aria-disabled={busy || undefined}
+        >
+          {busy ? "Gemmer …" : "Gem"}
+        </Button>
+        <Button type="button" size="sm" variant="ghost" onClick={onDone}>
+          Annullér
+        </Button>
+      </div>
+    </form>
   );
 }
