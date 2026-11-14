@@ -52,6 +52,8 @@ Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 
 - **iPhone (14/11, commit `e7aad59`):** "Tilføj til kalender" serveres som `text/calendar` fra `/api/public/kalender/<token>` (iPhone åbner "Føj til kalender" i stedet for en download; påmindelse 1 t før; ugyldigt link giver 404). "Vis vej" åbner Apple Kort. Navnefelter autokorrigeres ikke, og retur-tasten siger Næste/Gå/Udfør ("Gå" sender formularen). Bundbjælker glider væk, mens tastaturet er oppe. iOS laver ikke blå links af numre. Medarbejderappen på hjemmeskærmen: fuld skærm under statusbjælken. Verificeret live i 393 px med berøringsemulering; selve kalenderarket, Kort-appen og hjemmeskærmen skal prøves på en rigtig iPhone. Testbooking slettet efter id.
 
+- **Bookingflow med frisør først (14/11, commit `d06a0a8`):** trin 1 er nu "Vælg frisør" (foto, antal behandlinger, prisniveau, første ledige tid), trin 2 "Vælg behandling" viser kun den valgte frisørs behandlinger med frisørens egne priser og varigheder. Tid, oplysninger og gennemse bruger `frisor` + `tilbud`; "Ret"-links og tilbage-links følger den nye rækkefølge; `/frisor` sender til forsiden. Testet live i 393 px hele vejen til gennemse (ingen booking oprettet).
+
 **Ikke testet endnu:** ret kunde, omdøb behandling, ryd/slet notifikationer og afvis besked (kun typecheck/lint/unit-tests – ikke set live); invitation af en rigtig medarbejder og rolleadgang med flere brugere (medarbejder A må ikke se B's bookinger), push på rigtige enheder, mail og WhatsApp (afventer opsætning).
 
 ## Afventer ekstern opsætning
