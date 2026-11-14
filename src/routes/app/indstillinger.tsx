@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { Button, CheckboxRow, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { StaffPhotoEditor } from "@/components/fs/staff-photo";
 import { notifySuccess } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
 import { disablePush, enablePush, pushState, type PushState } from "@/lib/push";
@@ -114,6 +115,12 @@ function Settings() {
               <h2 id="profil" className="text-2xl leading-8 text-text">
                 Profil
               </h2>
+              <StaffPhotoEditor
+                staffId={mine.id}
+                name={mine.display_name}
+                photoPath={mine.photo_path}
+                onError={(text) => setMsg({ tone: "error", text })}
+              />
               <TextField
                 label="Navn (vises for kunderne)"
                 value={name}

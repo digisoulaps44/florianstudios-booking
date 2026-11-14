@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { BookBar, CustomerShell, OptionList, OptionRow, StepHeader } from "@/components/fs/booking";
 import { Button, ButtonLink, Monogram, Notice } from "@/components/fs/primitives";
+import { staffPhotoUrl } from "@/lib/staff-photo";
 import { fetchStaffOptions } from "@/lib/booking.functions";
 import { formatDateShort, formatDuration, formatPrice, formatTime } from "@/lib/format";
 import { localDate } from "@/lib/tz";
@@ -95,7 +96,7 @@ function ChooseStaff() {
               value={s.staffTreatmentId}
               checked={s.staffTreatmentId === selected}
               onSelect={setSelected}
-              leading={<Monogram name={s.name} />}
+              leading={<Monogram name={s.name} src={staffPhotoUrl(s.photoPath)} />}
               title={s.name}
               titleClassName="font-body text-base leading-6 font-medium"
               meta={`${formatDuration(s.durationMinutes)} · ${formatPrice(s.priceOre)}`}

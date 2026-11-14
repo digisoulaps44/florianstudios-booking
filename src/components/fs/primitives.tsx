@@ -361,7 +361,26 @@ export function initials(name: string): string {
   return (first + last).toUpperCase();
 }
 
-export function Monogram({ name, className }: { name: string; className?: string }) {
+export function Monogram({
+  name,
+  className,
+  src,
+}: {
+  name: string;
+  className?: string;
+  /** Profilfoto; uden vises initialer. */
+  src?: string | undefined;
+}) {
+  if (src)
+    return (
+      <img
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        className={cn("h-12 w-12 shrink-0 border border-control object-cover", className)}
+      />
+    );
   return (
     <span
       aria-hidden="true"

@@ -25,6 +25,7 @@ Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 - Notifikationscenter med læst/ulæst (virker uden push). Mail-/push-valg pr. medarbejder; ejeren kan tilvælge alle bookinger.
 - Ejer: invitér/deaktivér medarbejdere, salonindstillinger (frist, påmindelse, bookingvindue, interval, varsel), fejlede beskeder med "Send igen" og "Afvis" (status `cancelled`, slettes ikke).
 - Ret kundens navn, mobil, mail og note på bookingen (samme validering og telefon-normalisering som bookingflowet; historikpost `details_changed` med feltnavne, ikke værdier). Ejeren kan omdøbe behandlinger (katalognavn, gælder alle; gamle bookinger beholder navnet). Notifikationer: "Ryd læste" og slet enkelt (hard-delete af egne, migration `0003_notification_delete_and_details_changed_event`).
+- Profilfotos (branch `feat/staff-photos`): vælg/skift/fjern i Indstillinger (egen) og Medarbejdere (ejer for alle); midterkvadrat beskæres og komprimeres i browseren til 512 px WebP (JPEG-fallback). Vises i kundens frisørvalg og medarbejderlisten, ellers initialer. Ejer kan redigere andres navn og telefon. Kolonne `staff.photo_path` + storage-politikker `staff_photos_*` (migration `0002_staff_photo_path_and_storage_policies`). Ikke testet live.
 
 **Beskeder**
 - Vedvarende kø (`message_jobs`) + arbejder (`/api/public/cron/messages`) med låsning (`SKIP LOCKED`), idempotens, eksponentiel backoff, permanente fejl og "afventer opsætning".
@@ -61,6 +62,7 @@ Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 | Linkhemmelighed | Lovable | Secret `BOOKING_LINK_SECRET` (mindst 32 tegn; valgfri – ellers afledes den af service-nøglen). |
 | Cron-job | Lovable | Hvert minut: `POST /api/public/cron/messages` med `LOVABLE_CRON_SECRET`. Når kun den udgivne app – kræver publish. |
 | WhatsApp Business | Ejer + Lovable | Forbind connectoren (Meta Embedded Signup), opret skabelonerne i `docs/whatsapp-skabeloner.md`, byg afsender + statusmodtager, vælg projektet under Incoming messages. |
+| Bucket `staff-photos` | Ejer + Lovable | Lovable måtte ikke oprette en offentlig bucket: tillad offentlige buckets i Lovable → Settings → Privacy & Security, og bed så Lovable oprette `staff-photos` (public, 2 MB, webp/jpeg/png). Politikkerne findes allerede. Indtil da fejler upload med en pæn besked. |
 | Data | Ejer | Arbejdstider og behandlinger for hver medarbejder (i appen). |
 
 Udført: tabelrettigheder strammet (migration `0001_tighten_booking_table_privileges`, 294 rettighedstjek verificeret af Lovable). Push-nøgler (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`) er sat 14/11 – nye secrets kræver en ny udgivelse, før appen ser dem.
