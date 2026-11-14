@@ -2,87 +2,98 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { BookBar, CustomerShell, OptionList, OptionRow, StepHeader } from "@/components/fs/booking";
-import { Button, Notice } from "@/components/fs/primitives";
-import { fetchCatalog } from "@/lib/booking.functions";
-import { formatDuration, formatPrice } from "@/lib/format";
+import { Button, Monogram, Notice } from "@/components/fs/primitives";
+import { fetchBarbers } from "@/lib/booking.functions";
+import { nextAvailableLabel, priceRangeLabel, treatmentCountLabel } from "@/lib/booking-labels";
+
+const DESCRIPTION = "Vælg frisør, behandling og tid. Book online hos Florian Studios i Herlev.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Book tid – Florian Studios" },
-      {
-        name: "description",
-        content: "Vælg behandling, frisør og tid. Book online hos Florian Studios i Herlev.",
-      },
+      { name: "description", content: DESCRIPTION },
       { property: "og:title", content: "Book tid – Florian Studios" },
-      {
-        property: "og:description",
-        content: "Vælg behandling, frisør og tid. Book online hos Florian Studios i Herlev.",
-      },
+      { property: "og:description", content: DESCRIPTION },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  loader: () => fetchCatalog(),
-  component: ChooseTreatment,
+  loader: () => fetchBarbers(),
+  component: ChooseBarber,
 });
 
-function ChooseTreatment() {
-  const catalog = Route.useLoaderData();
+/** Trin 1: kunden vælger sin frisør. Priserne afhænger af frisøren og vises i trin 2. */
+function ChooseBarber() {
+  const result = Route.useLoaderData();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<string>();
 
-  if (!catalog.ok) {
+  if (!result.ok) {
     return (
       <CustomerShell>
-        <StepHeader step={1} title="Vælg behandling." />
-        <Notice tone="error" title="Behandlingerne kunne ikke hentes." className="mt-8">
-          {catalog.message}
+        <StepHeader step={1} title="Vælg frisør." />
+        <Notice tone="error" title="Frisørerne kunne ikke hentes." className="mt-8">
+          {result.message}
         </Notice>
       </CustomerShell>
     );
   }
 
-  const treatment = catalog.treatments.find((t) => t.id === selected);
+  const barber = result.barbers.find((b) => b.id === selected);
 
   return (
     <CustomerShell
       bar={
-        catalog.treatments.length === 0 ? undefined : (
+        result.barbers.length === 0 ? undefined : (
           <BookBar
-            summary={treatment ? treatment.name : "Ingen behandling valgt"}
-            sub={treatment ? priceLabel(treatment.minPriceOre, treatment.maxPriceOre) : undefined}
+            summary={barber ? barber.name : "Ingen frisør valgt"}
+            sub={
+              barber
+                ? `${treatmentCountLabel(barber.treatmentCount)} · ${priceRangeLabel(barber.minPriceOre, barber.maxPriceOre)}`
+                : undefined
+            }
           >
             <Button
-              disabled={!treatment}
+              disabled={!barber}
               onClick={() =>
-                treatment && navigate({ to: "/frisor", search: { behandling: treatment.id } })
+                barber && navigate({ to: "/behandling", search: { frisor: barber.id } })
               }
             >
-              Vælg behandling
+              Vælg frisør
             </Button>
           </BookBar>
         )
       }
     >
-      <StepHeader step={1} title="Vælg behandling." />
+      <StepHeader
+        step={1}
+        title="Vælg frisør."
+        lede={
+          result.barbers.length > 1
+            ? "Hver frisør har sine egne priser. Du ser dem i næste trin."
+            : undefined
+        }
+      />
       <div className="mt-8">
-        {catalog.treatments.length === 0 ? (
+        {result.barbers.length === 0 ? (
           <Notice title="Der kan ikke bookes online lige nu.">
-            Ring til salonen på {catalog.salon.phone}, så finder vi en tid.
+            Ring til salonen på {result.salon.phone}, så finder vi en tid.
           </Notice>
         ) : (
-          <OptionList legend="Behandling">
-            {catalog.treatments.map((t) => (
+          <OptionList legend="Frisør">
+            {result.barbers.map((b) => (
               <OptionRow
-                key={t.id}
-                name="behandling"
-                value={t.id}
-                checked={t.id === selected}
+                key={b.id}
+                name="frisor"
+                value={b.id}
+                checked={b.id === selected}
                 onSelect={setSelected}
-                title={t.name}
-                meta={durationLabel(t.minDuration, t.maxDuration)}
-                price={priceLabel(t.minPriceOre, t.maxPriceOre)}
+                leading={<Monogram name={b.name} src={b.photoUrl ?? undefined} />}
+                title={b.name}
+                titleClassName="font-body text-base leading-6 font-medium"
+                meta={`${treatmentCountLabel(b.treatmentCount)} · ${priceRangeLabel(b.minPriceOre, b.maxPriceOre)}`}
+                extra={nextAvailableLabel(b.nextAvailable)}
               />
             ))}
           </OptionList>
@@ -90,16 +101,8 @@ function ChooseTreatment() {
       </div>
       <p className="mt-8 text-sm text-text-2">
         Du får en bekræftelse på mail. Ændr eller aflys via linket i mailen frem til{" "}
-        {catalog.salon.cancellationCutoffHours} timer før.
+        {result.salon.cancellationCutoffHours} timer før.
       </p>
     </CustomerShell>
   );
-}
-
-export function priceLabel(min: number, max: number) {
-  return min === max ? formatPrice(min) : `fra ${formatPrice(min)}`;
-}
-
-export function durationLabel(min: number, max: number) {
-  return min === max ? formatDuration(min) : `${formatDuration(min)}–${formatDuration(max)}`;
 }

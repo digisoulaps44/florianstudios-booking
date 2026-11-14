@@ -12,7 +12,7 @@ import { formatTime } from "@/lib/format";
 export const Route = createFileRoute("/oplysninger")({
   ...bookingSearch(
     z.object({
-      behandling: z.string().uuid(),
+      frisor: z.string().uuid(),
       tilbud: z.string().uuid(),
       tid: z.string().datetime({ offset: true }),
     }),
@@ -67,7 +67,7 @@ function CustomerDetails() {
         title="Dine oplysninger."
         back={{
           to: "/tid",
-          search: { behandling: search.behandling, tilbud: search.tilbud },
+          search: { frisor: search.frisor, tilbud: search.tilbud },
           label: "Vælg tidspunkt",
         }}
         lede={

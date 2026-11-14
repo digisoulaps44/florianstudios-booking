@@ -13,7 +13,7 @@ import { Button, Eyebrow, buttonClasses } from "./primitives";
 
 export const SALON_PHONE_E164 = "+4571530766";
 export const SALON_PHONE = "+45 71 53 07 66";
-export const STEPS = ["Behandling", "Frisør", "Tidspunkt", "Dine oplysninger", "Bekræft"] as const;
+export const STEPS = ["Frisør", "Behandling", "Tidspunkt", "Dine oplysninger", "Bekræft"] as const;
 
 // ── Shell ────────────────────────────────────────────────────────────────
 export function CustomerShell({ children, bar }: { children: ReactNode; bar?: ReactNode }) {

@@ -95,20 +95,11 @@ async function allow(
 }
 
 // ── Katalog ──────────────────────────────────────────────────────────────
-export type CatalogTreatment = {
-  id: string;
+export type Salon = {
   name: string;
-  description: string | null;
-  minPriceOre: number;
-  maxPriceOre: number;
-  minDuration: number;
-  maxDuration: number;
-};
-
-export type Catalog = {
-  ok: true;
-  salon: { name: string; address: string; phone: string; cancellationCutoffHours: number };
-  treatments: CatalogTreatment[];
+  address: string;
+  phone: string;
+  cancellationCutoffHours: number;
 };
 
 type OfferRow = {
@@ -131,113 +122,140 @@ type OfferRow = {
   } | null;
 };
 
-async function loadOffers(treatmentId?: string): Promise<OfferRow[]> {
+async function loadOffers(staffId?: string): Promise<OfferRow[]> {
   let q = supabaseAdmin
     .from("staff_treatments")
     .select(
       "id, price_ore, duration_minutes, staff:staff_id(id, display_name, active, sort_order, photo_path), treatment:treatment_id(id, name, description, active, sort_order)",
     )
     .eq("active", true);
-  if (treatmentId) q = q.eq("treatment_id", treatmentId);
+  if (staffId) q = q.eq("staff_id", staffId);
   const { data, error } = await q;
   if (error) throw new Error(error.message);
   return ((data ?? []) as OfferRow[]).filter((r) => r.staff?.active && r.treatment?.active);
 }
 
-export async function getCatalog(): Promise<Catalog | Failure> {
-  if (!(await allow("read", 240, 60))) return fail("rate_limited");
-  const [settings, offers] = await Promise.all([loadSettings(), loadOffers()]);
-  const byTreatment = new Map<
-    string,
-    { t: NonNullable<OfferRow["treatment"]>; rows: OfferRow[] }
-  >();
-  for (const r of offers) {
-    const t = r.treatment!;
-    const entry = byTreatment.get(t.id) ?? { t, rows: [] };
-    entry.rows.push(r);
-    byTreatment.set(t.id, entry);
-  }
-  const treatments = [...byTreatment.values()]
-    .sort((a, b) => a.t.sort_order - b.t.sort_order || a.t.name.localeCompare(b.t.name, "da"))
-    .map(({ t, rows }) => ({
-      id: t.id,
-      name: t.name,
-      description: t.description,
-      minPriceOre: Math.min(...rows.map((r) => r.price_ore)),
-      maxPriceOre: Math.max(...rows.map((r) => r.price_ore)),
-      minDuration: Math.min(...rows.map((r) => r.duration_minutes)),
-      maxDuration: Math.max(...rows.map((r) => r.duration_minutes)),
-    }));
+function salonOf(settings: Awaited<ReturnType<typeof loadSettings>>): Salon {
   return {
-    ok: true,
-    salon: {
-      name: settings.name,
-      address: settings.address_line,
-      phone: settings.phone,
-      cancellationCutoffHours: settings.cancellation_cutoff_hours,
-    },
-    treatments,
+    name: settings.name,
+    address: settings.address_line,
+    phone: settings.phone,
+    cancellationCutoffHours: settings.cancellation_cutoff_hours,
   };
 }
 
-// ── Medarbejdere for en behandling ───────────────────────────────────────
-export type StaffOption = {
-  staffTreatmentId: string;
-  staffId: string;
-  name: string;
-  /** Signeret URL (1 t) – bucket'en er privat. */
-  photoUrl: string | null;
-  priceOre: number;
-  durationMinutes: number;
-  nextAvailable: string | null; // ISO
-};
-
-export async function getStaffOptions(
-  treatmentId: string,
-): Promise<{ ok: true; treatmentName: string; staff: StaffOption[] } | Failure> {
-  if (!(await allow("read", 240, 60))) return fail("rate_limited");
-  const [settings, offers] = await Promise.all([loadSettings(), loadOffers(treatmentId)]);
-  if (offers.length === 0) return fail("treatment_unavailable");
+/** Første ledige tid for en behandling hos en medarbejder (inden for 3 uger). */
+async function firstAvailable(
+  staffId: string,
+  durationMinutes: number,
+  settings: Awaited<ReturnType<typeof loadSettings>>,
+): Promise<string | null> {
   const range = bookableRange(settings);
   const scanDays = Array.from({ length: Math.min(21, settings.booking_horizon_days) }, (_, i) =>
     addDays(range.first, i),
   );
+  const days = await slotsForDays(
+    { staff_id: staffId, duration_minutes: durationMinutes, buffer_minutes: 0 },
+    scanDays,
+    settings,
+  );
+  for (const d of scanDays) {
+    const first = days.get(d)?.slots[0];
+    if (first) return first.toISOString();
+  }
+  return null;
+}
 
-  const staff = await Promise.all(
-    offers.map(async (r) => {
-      const days = await slotsForDays(
-        { staff_id: r.staff!.id, duration_minutes: r.duration_minutes, buffer_minutes: 0 },
-        scanDays,
-        settings,
-      );
-      let next: string | null = null;
-      for (const d of scanDays) {
-        const first = days.get(d)?.slots[0];
-        if (first) {
-          next = first.toISOString();
-          break;
-        }
-      }
+const byTreatmentOrder = (a: OfferRow, b: OfferRow) =>
+  a.treatment!.sort_order - b.treatment!.sort_order ||
+  a.treatment!.name.localeCompare(b.treatment!.name, "da");
+
+// ── Trin 1: frisørerne ───────────────────────────────────────────────────
+export type Barber = {
+  id: string;
+  name: string;
+  /** Signeret URL (1 t) – bucket'en er privat. */
+  photoUrl: string | null;
+  treatmentCount: number;
+  minPriceOre: number;
+  maxPriceOre: number;
+  /** Første ledige tid for frisørens korteste behandling (ISO). */
+  nextAvailable: string | null;
+};
+
+export async function getBarbers(): Promise<
+  { ok: true; salon: Salon; barbers: Barber[] } | Failure
+> {
+  if (!(await allow("read", 240, 60))) return fail("rate_limited");
+  const [settings, offers] = await Promise.all([loadSettings(), loadOffers()]);
+  const byStaff = new Map<string, OfferRow[]>();
+  for (const r of offers) byStaff.set(r.staff!.id, [...(byStaff.get(r.staff!.id) ?? []), r]);
+  const rows = await Promise.all(
+    [...byStaff.values()].map(async (list) => {
+      const staff = list[0]!.staff!;
+      const shortest = Math.min(...list.map((r) => r.duration_minutes));
       return {
-        staffTreatmentId: r.id,
-        staffId: r.staff!.id,
-        name: r.staff!.display_name,
-        photoPath: r.staff!.photo_path,
-        priceOre: r.price_ore,
-        durationMinutes: r.duration_minutes,
-        nextAvailable: next,
-        sort: r.staff!.sort_order,
+        id: staff.id,
+        name: staff.display_name,
+        photoPath: staff.photo_path,
+        sort: staff.sort_order,
+        treatmentCount: list.length,
+        minPriceOre: Math.min(...list.map((r) => r.price_ore)),
+        maxPriceOre: Math.max(...list.map((r) => r.price_ore)),
+        nextAvailable: await firstAvailable(staff.id, shortest, settings),
       };
     }),
   );
-  staff.sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name, "da"));
-  const urls = await signStaffPhotos(staff.map((s) => s.photoPath));
+  rows.sort((a, b) => a.sort - b.sort || a.name.localeCompare(b.name, "da"));
+  const urls = await signStaffPhotos(rows.map((r) => r.photoPath));
   return {
     ok: true,
-    treatmentName: offers[0]!.treatment!.name,
-    staff: staff.map(({ sort: _sort, photoPath, ...s }) => ({
-      ...s,
+    salon: salonOf(settings),
+    barbers: rows.map(({ sort: _sort, photoPath, ...r }) => ({
+      ...r,
       photoUrl: photoPath ? (urls.get(photoPath) ?? null) : null,
+    })),
+  };
+}
+
+// ── Trin 2: den valgte frisørs behandlinger og egne priser ───────────────
+export type BarberOffer = {
+  staffTreatmentId: string;
+  treatmentId: string;
+  name: string;
+  description: string | null;
+  priceOre: number;
+  durationMinutes: number;
+};
+
+export type BarberMenu = {
+  ok: true;
+  salon: Salon;
+  barber: { id: string; name: string; photoUrl: string | null };
+  offers: BarberOffer[];
+};
+
+export async function getBarberOffers(staffId: string): Promise<BarberMenu | Failure> {
+  if (!(await allow("read", 240, 60))) return fail("rate_limited");
+  const [settings, offers] = await Promise.all([loadSettings(), loadOffers(staffId)]);
+  if (offers.length === 0) return fail("treatment_unavailable");
+  const staff = offers[0]!.staff!;
+  const urls = await signStaffPhotos([staff.photo_path]);
+  return {
+    ok: true,
+    salon: salonOf(settings),
+    barber: {
+      id: staff.id,
+      name: staff.display_name,
+      photoUrl: staff.photo_path ? (urls.get(staff.photo_path) ?? null) : null,
+    },
+    offers: [...offers].sort(byTreatmentOrder).map((r) => ({
+      staffTreatmentId: r.id,
+      treatmentId: r.treatment!.id,
+      name: r.treatment!.name,
+      description: r.treatment!.description,
+      priceOre: r.price_ore,
+      durationMinutes: r.duration_minutes,
     })),
   };
 }

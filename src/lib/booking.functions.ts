@@ -18,13 +18,15 @@ import {
 
 const server = () => import("@/server/public-booking.server");
 
-export const fetchCatalog = createServerFn({ method: "GET" }).handler(async () =>
-  (await server()).getCatalog(),
+/** Trin 1: frisørerne med prisniveau og første ledige tid. */
+export const fetchBarbers = createServerFn({ method: "GET" }).handler(async () =>
+  (await server()).getBarbers(),
 );
 
-export const fetchStaffOptions = createServerFn({ method: "GET" })
-  .validator(z.object({ treatmentId: uuid }))
-  .handler(async ({ data }) => (await server()).getStaffOptions(data.treatmentId));
+/** Trin 2 og frem: den valgte frisørs behandlinger med frisørens egne priser og varigheder. */
+export const fetchBarberOffers = createServerFn({ method: "GET" })
+  .validator(z.object({ staffId: uuid }))
+  .handler(async ({ data }) => (await server()).getBarberOffers(data.staffId));
 
 export const fetchDays = createServerFn({ method: "GET" })
   .validator(daysSchema)

@@ -13,20 +13,20 @@ import {
   type SlotItem,
 } from "@/components/fs/booking";
 import { Button, ButtonLink, Notice, Spinner } from "@/components/fs/primitives";
-import { fetchDays, fetchSlots, fetchStaffOptions } from "@/lib/booking.functions";
+import { fetchDays, fetchSlots, fetchBarberOffers } from "@/lib/booking.functions";
 import { dateFromDay, formatDateLong, formatDuration, formatPrice } from "@/lib/format";
 import { addDays, isValidDateString, localDate } from "@/lib/tz";
 
 const search = z.object({
-  behandling: z.string().uuid(),
+  frisor: z.string().uuid(),
   tilbud: z.string().uuid(),
   dato: z.string().refine(isValidDateString).optional(),
 });
 
 export const Route = createFileRoute("/tid")({
   ...bookingSearch(search),
-  loaderDeps: ({ search }) => ({ behandling: search.behandling }),
-  loader: ({ deps }) => fetchStaffOptions({ data: { treatmentId: deps.behandling } }),
+  loaderDeps: ({ search }) => ({ frisor: search.frisor }),
+  loader: ({ deps }) => fetchBarberOffers({ data: { staffId: deps.frisor } }),
   head: () => ({ meta: [{ title: "Vælg tidspunkt – Florian Studios" }] }),
   component: ChooseTime,
 });
@@ -35,16 +35,16 @@ const WEEK = 7;
 
 function ChooseTime() {
   const options = Route.useLoaderData();
-  const { behandling, tilbud, dato } = Route.useSearch();
+  const { frisor, tilbud, dato } = Route.useSearch();
   const navigate = useNavigate({ from: "/tid" });
   const today = localDate(new Date());
   const [from, setFrom] = useState(() =>
     dato && dato > today ? weekContaining(dato, today) : today,
   );
   const [slot, setSlot] = useState<SlotItem>();
-  const back = { to: "/frisor", search: { behandling }, label: "Vælg frisør" };
+  const back = { to: "/behandling", search: { frisor }, label: "Vælg behandling" };
 
-  const offer = options.ok ? options.staff.find((s) => s.staffTreatmentId === tilbud) : undefined;
+  const offer = options.ok ? options.offers.find((o) => o.staffTreatmentId === tilbud) : undefined;
 
   const days = useQuery({
     queryKey: ["days", tilbud, from],
@@ -76,8 +76,8 @@ function ChooseTime() {
           title="Frisøren kan ikke bookes til denne behandling lige nu."
           className="mt-8"
           actions={
-            <ButtonLink to="/frisor" search={{ behandling }} variant="ghost">
-              Vælg en anden frisør
+            <ButtonLink to="/behandling" search={{ frisor }} variant="ghost">
+              Vælg en anden behandling
             </ButtonLink>
           }
         />
@@ -89,14 +89,14 @@ function ChooseTime() {
     <CustomerShell
       bar={
         <BookBar
-          summary={`${options.treatmentName} · ${formatPrice(offer.priceOre)}`}
-          sub={`${offer.name} · ${formatDuration(offer.durationMinutes)}`}
+          summary={`${offer.name} · ${formatPrice(offer.priceOre)}`}
+          sub={`${options.barber.name} · ${formatDuration(offer.durationMinutes)}`}
         >
           <Button
             disabled={!slot}
             onClick={() =>
               slot &&
-              navigate({ to: "/oplysninger", search: { behandling, tilbud, tid: slot.startsAt } })
+              navigate({ to: "/oplysninger", search: { frisor, tilbud, tid: slot.startsAt } })
             }
           >
             {slot ? `Vælg kl. ${slot.time}` : "Vælg tidspunkt"}
@@ -108,7 +108,7 @@ function ChooseTime() {
         step={3}
         title="Vælg tidspunkt."
         back={back}
-        lede={`${offer.name} · ${options.treatmentName}`}
+        lede={`${options.barber.name} · ${offer.name}`}
       />
 
       <section className="mt-8" aria-label="Dato">

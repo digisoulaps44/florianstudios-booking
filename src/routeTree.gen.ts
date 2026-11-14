@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as BehandlingRouteImport } from './routes/behandling'
 import { Route as FrisorRouteImport } from './routes/frisor'
 import { Route as GennemseRouteImport } from './routes/gennemse'
 import { Route as LoginRouteImport } from './routes/login'
@@ -42,6 +43,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/app',
   path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BehandlingRoute = BehandlingRouteImport.update({
+  id: '/behandling',
+  path: '/behandling',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FrisorRoute = FrisorRouteImport.update({
@@ -158,6 +164,7 @@ const ApiPublicKalenderTokenRoute = ApiPublicKalenderTokenRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/behandling': typeof BehandlingRoute
   '/frisor': typeof FrisorRoute
   '/gennemse': typeof GennemseRoute
   '/login': typeof LoginRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/behandling': typeof BehandlingRoute
   '/frisor': typeof FrisorRoute
   '/gennemse': typeof GennemseRoute
   '/login': typeof LoginRoute
@@ -210,6 +218,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/behandling': typeof BehandlingRoute
   '/frisor': typeof FrisorRoute
   '/gennemse': typeof GennemseRoute
   '/login': typeof LoginRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/behandling'
     | '/frisor'
     | '/gennemse'
     | '/login'
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/behandling'
     | '/frisor'
     | '/gennemse'
     | '/login'
@@ -289,6 +300,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/app'
+    | '/behandling'
     | '/frisor'
     | '/gennemse'
     | '/login'
@@ -316,6 +328,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  BehandlingRoute: typeof BehandlingRoute
   FrisorRoute: typeof FrisorRoute
   GennemseRoute: typeof GennemseRoute
   LoginRoute: typeof LoginRoute
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/app'
       fullPath: '/app'
       preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/behandling': {
+      id: '/behandling'
+      path: '/behandling'
+      fullPath: '/behandling'
+      preLoaderRoute: typeof BehandlingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/frisor': {
@@ -537,6 +557,7 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  BehandlingRoute: BehandlingRoute,
   FrisorRoute: FrisorRoute,
   GennemseRoute: GennemseRoute,
   LoginRoute: LoginRoute,

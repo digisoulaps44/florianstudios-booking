@@ -11,22 +11,22 @@ import {
   TimeSlots,
 } from "@/components/fs/booking";
 import { Button, ButtonLink, Notice } from "@/components/fs/primitives";
-import { submitBooking, fetchStaffOptions } from "@/lib/booking.functions";
+import { submitBooking, fetchBarberOffers } from "@/lib/booking.functions";
 import { customerSchema } from "@/lib/booking-schemas";
 import { clearIdempotencyKey, idempotencyKeyFor, useCustomerDraft } from "@/lib/customer-draft";
 import { formatDuration, formatPrice, formatWhen } from "@/lib/format";
 import { formatPhone, normalizePhone } from "@/lib/phone";
 
 const search = z.object({
-  behandling: z.string().uuid(),
+  frisor: z.string().uuid(),
   tilbud: z.string().uuid(),
   tid: z.string().datetime({ offset: true }),
 });
 
 export const Route = createFileRoute("/gennemse")({
   ...bookingSearch(search),
-  loaderDeps: ({ search }) => ({ behandling: search.behandling }),
-  loader: ({ deps }) => fetchStaffOptions({ data: { treatmentId: deps.behandling } }),
+  loaderDeps: ({ search }) => ({ frisor: search.frisor }),
+  loader: ({ deps }) => fetchBarberOffers({ data: { staffId: deps.frisor } }),
   head: () => ({ meta: [{ title: "Gennemse booking – Florian Studios" }] }),
   component: Review,
 });
@@ -45,7 +45,9 @@ function Review() {
   const [problem, setProblem] = useState<Problem>();
   const inFlight = useRef(false);
 
-  const offer = options.ok ? options.staff.find((x) => x.staffTreatmentId === s.tilbud) : undefined;
+  const offer = options.ok
+    ? options.offers.find((o) => o.staffTreatmentId === s.tilbud)
+    : undefined;
   const contactValid = customerSchema.safeParse(draft).success;
 
   // Uden kontaktoplysninger (fx nyt faneblad) sendes kunden tilbage til trin 4.
@@ -112,15 +114,12 @@ function Review() {
 
   const start = new Date(s.tid);
   const phone = normalizePhone(draft.phone);
-  const timeSearch = { behandling: s.behandling, tilbud: s.tilbud };
+  const timeSearch = { frisor: s.frisor, tilbud: s.tilbud };
 
   return (
     <CustomerShell
       bar={
-        <BookBar
-          summary={`${options.treatmentName} · ${formatPrice(offer.priceOre)}`}
-          sub={formatWhen(start)}
-        >
+        <BookBar summary={`${offer.name} · ${formatPrice(offer.priceOre)}`} sub={formatWhen(start)}>
           <Button onClick={confirm} disabled={!contactValid} loading={submitting}>
             {submitting ? "Booker …" : "Bekræft booking"}
           </Button>
@@ -166,14 +165,14 @@ function Review() {
         <SummaryList
           rows={[
             {
-              term: "Behandling",
-              value: `${options.treatmentName} · ${formatDuration(offer.durationMinutes)}`,
-              edit: { to: "/", label: "behandling" },
+              term: "Frisør",
+              value: options.barber.name,
+              edit: { to: "/", label: "frisør" },
             },
             {
-              term: "Frisør",
-              value: offer.name,
-              edit: { to: "/frisor", search: { behandling: s.behandling }, label: "frisør" },
+              term: "Behandling",
+              value: `${offer.name} · ${formatDuration(offer.durationMinutes)}`,
+              edit: { to: "/behandling", search: { frisor: s.frisor }, label: "behandling" },
             },
             {
               term: "Tidspunkt",
