@@ -179,6 +179,10 @@ function StaffAdmin() {
             id="invite-displayName"
             label="Navn"
             autoComplete="off"
+            autoCapitalize="words"
+            autoCorrect="off"
+            spellCheck={false}
+            enterKeyHint="next"
             error={errors.displayName}
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -190,7 +194,9 @@ function StaffAdmin() {
             autoComplete="off"
             error={errors.email}
             autoCapitalize="off"
+            autoCorrect="off"
             spellCheck={false}
+            enterKeyHint="next"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />

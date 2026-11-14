@@ -85,7 +85,7 @@ export function AppShell({ children, unread }: { children: ReactNode; unread: nu
       </main>
       <nav
         aria-label="Faner"
-        className="glass pb-safe fixed inset-x-0 bottom-0 z-(--z-bookbar) border-t border-line-strong md:hidden"
+        className="keyboard-hide glass pb-safe fixed inset-x-0 bottom-0 z-(--z-bookbar) border-t border-line-strong md:hidden"
       >
         {activeIndex >= 0 ? (
           // Markeringen glider til den nye fane i stedet for at hoppe – øjet følger med.

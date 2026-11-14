@@ -86,6 +86,9 @@ function CustomerDetails() {
           name="name"
           autoComplete="name"
           autoCapitalize="words"
+          autoCorrect="off"
+          spellCheck={false}
+          enterKeyHint="next"
           value={draft.name}
           onChange={(e) => update({ name: e.target.value })}
           onBlur={() => draft.name && validateField("name")}
@@ -98,6 +101,7 @@ function CustomerDetails() {
           type="tel"
           inputMode="tel"
           autoComplete="tel-national"
+          enterKeyHint="next"
           prefix="+45"
           value={draft.phone}
           onChange={(e) => update({ phone: e.target.value })}
@@ -111,7 +115,9 @@ function CustomerDetails() {
           type="email"
           autoComplete="email"
           autoCapitalize="off"
+          autoCorrect="off"
           spellCheck={false}
+          enterKeyHint="go"
           placeholder="navn@mail.dk"
           hint="Vi sender bekræftelsen og linket til at ændre din tid hertil."
           value={draft.email}

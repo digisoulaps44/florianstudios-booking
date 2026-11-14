@@ -171,6 +171,8 @@ function NewBooking() {
             label="Navn"
             autoComplete="off"
             autoCapitalize="words"
+            autoCorrect="off"
+            spellCheck={false}
             enterKeyHint="next"
             value={customer.name}
             onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
@@ -193,7 +195,9 @@ function NewBooking() {
             optional
             type="email"
             autoCapitalize="off"
+            autoCorrect="off"
             spellCheck={false}
+            enterKeyHint="done"
             hint="Med mail får kunden bekræftelse, påmindelse og link til at ændre tiden."
             value={customer.email}
             onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
@@ -220,7 +224,7 @@ function NewBooking() {
         </section>
 
         {/* Over fanebjælken – også med home-indikatoren på iPhone (--tabbar-h). */}
-        <div className="glass sticky bottom-(--tabbar-h) z-10 -mx-gutter border-t border-line-strong px-gutter py-3 md:bottom-0">
+        <div className="keyboard-hide glass sticky bottom-(--tabbar-h) z-10 -mx-gutter border-t border-line-strong px-gutter py-3 md:bottom-0">
           <Button type="submit" loading={busy} className="w-full sm:w-auto">
             {busy ? "Opretter …" : "Opret booking"}
           </Button>

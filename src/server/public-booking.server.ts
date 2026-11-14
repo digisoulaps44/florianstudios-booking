@@ -424,6 +424,13 @@ async function bookingIdFromToken(token: string): Promise<string | null> {
   return data.booking_id;
 }
 
+/** Til kalenderfilen: bookingen bag et kundelink (også aflyste, så kalenderen kan opdateres). */
+export async function getCalendarBooking(token: string): Promise<BookingSummary | null> {
+  if (!(await allow("calendar", 30, 600))) return null;
+  const id = await bookingIdFromToken(token);
+  return id ? loadSummary(id) : null;
+}
+
 export type ManagedBooking = {
   ok: true;
   booking: BookingSummary;

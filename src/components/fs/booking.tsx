@@ -25,7 +25,7 @@ export function CustomerShell({ children, bar }: { children: ReactNode; bar?: Re
       >
         Spring til indhold
       </a>
-      <header className="glass sticky top-0 z-(--z-header) border-b border-line">
+      <header className="glass sticky top-0 z-(--z-header) border-b border-line pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex h-header max-w-text items-center justify-between gap-3 px-gutter">
           <a
             href="https://florianstudio.dk"
@@ -446,7 +446,7 @@ export function BookBar({
   children: ReactNode;
 }) {
   return (
-    <div className="glass pb-safe fixed inset-x-0 bottom-0 z-(--z-bookbar) border-t border-line-strong px-gutter pt-3">
+    <div className="keyboard-hide glass pb-safe fixed inset-x-0 bottom-0 z-(--z-bookbar) border-t border-line-strong px-gutter pt-3">
       <div className="mx-auto flex max-w-text items-center gap-3">
         {summary ? (
           <div className="min-w-0 flex-1">

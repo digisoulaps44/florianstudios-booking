@@ -32,6 +32,7 @@ import { Route as AppTiderRouteImport } from './routes/app/tider'
 import { Route as BookingTokenRouteImport } from './routes/booking.$token'
 import { Route as AppBookingIdRouteImport } from './routes/app/booking.$id'
 import { Route as ApiPublicCronMessagesRouteImport } from './routes/api/public/cron/messages'
+import { Route as ApiPublicKalenderTokenRouteImport } from './routes/api/public/kalender.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -148,6 +149,11 @@ const ApiPublicCronMessagesRoute = ApiPublicCronMessagesRouteImport.update({
   path: '/api/public/cron/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicKalenderTokenRoute = ApiPublicKalenderTokenRouteImport.update({
+  id: '/api/public/kalender/$token',
+  path: '/api/public/kalender/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/app/': typeof AppIndexRoute
   '/app/booking/$id': typeof AppBookingIdRoute
   '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
+  '/api/public/kalender/$token': typeof ApiPublicKalenderTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/app': typeof AppIndexRoute
   '/app/booking/$id': typeof AppBookingIdRoute
   '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
+  '/api/public/kalender/$token': typeof ApiPublicKalenderTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -223,6 +231,7 @@ export interface FileRoutesById {
   '/app/': typeof AppIndexRoute
   '/app/booking/$id': typeof AppBookingIdRoute
   '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
+  '/api/public/kalender/$token': typeof ApiPublicKalenderTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/booking/$id'
     | '/api/public/cron/messages'
+    | '/api/public/kalender/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -274,6 +284,7 @@ export interface FileRouteTypes {
     | '/app'
     | '/app/booking/$id'
     | '/api/public/cron/messages'
+    | '/api/public/kalender/$token'
   id:
     | '__root__'
     | '/'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/app/'
     | '/app/booking/$id'
     | '/api/public/cron/messages'
+    | '/api/public/kalender/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -312,6 +324,7 @@ export interface RootRouteChildren {
   TidRoute: typeof TidRoute
   BookingTokenRoute: typeof BookingTokenRoute
   ApiPublicCronMessagesRoute: typeof ApiPublicCronMessagesRoute
+  ApiPublicKalenderTokenRoute: typeof ApiPublicKalenderTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -477,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronMessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/kalender/$token': {
+      id: '/api/public/kalender/$token'
+      path: '/api/public/kalender/$token'
+      fullPath: '/api/public/kalender/$token'
+      preLoaderRoute: typeof ApiPublicKalenderTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -525,6 +545,7 @@ const rootRouteChildren: RootRouteChildren = {
   TidRoute: TidRoute,
   BookingTokenRoute: BookingTokenRoute,
   ApiPublicCronMessagesRoute: ApiPublicCronMessagesRoute,
+  ApiPublicKalenderTokenRoute: ApiPublicKalenderTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

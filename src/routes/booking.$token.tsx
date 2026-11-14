@@ -36,11 +36,11 @@ import {
   formatTime,
   formatWhen,
 } from "@/lib/format";
-import { downloadIcs } from "@/lib/ics";
 import { addDays, localDate } from "@/lib/tz";
 
 const ADDRESS = "Toggangen 1, 2730 Herlev";
-const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Florian Studios, ${ADDRESS}`)}`;
+// Apple Kort: åbner Kort-appen på iPhone (og kort i browseren andre steder).
+const MAPS_URL = `https://maps.apple.com/?q=${encodeURIComponent("Florian Studios")}&address=${encodeURIComponent(ADDRESS)}`;
 
 export const Route = createFileRoute("/booking/$token")({
   validateSearch: z.object({ ny: z.coerce.number().optional() }),
@@ -98,15 +98,8 @@ function ManageBooking() {
     />
   );
 
-  const addToCalendar = () =>
-    downloadIcs({
-      uid: b.id,
-      title: `${b.treatmentName} hos Florian Studios`,
-      start,
-      end,
-      location: `Florian Studios, ${ADDRESS}`,
-      description: `${b.treatmentName} hos ${b.staffName}. Ændr eller aflys: ${window.location.origin}/booking/${token}`,
-    });
+  // Kalenderfilen hentes fra serveren som text/calendar: iPhone åbner "Føj til kalender" direkte.
+  const calendarUrl = `/api/public/kalender/${token}`;
 
   // ── Bekræftelse lige efter booking ──
   if (ny && b.status === "confirmed") {
@@ -139,10 +132,10 @@ function ManageBooking() {
             Gem linket i mailen – det er din adgang til at ændre eller aflyse.
           </Notice>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-            <Button onClick={addToCalendar}>
+            <a href={calendarUrl} className={buttonClasses("primary")}>
               <Calendar aria-hidden="true" className="h-4 w-4" />
               Tilføj til kalender
-            </Button>
+            </a>
             <a
               href={MAPS_URL}
               target="_blank"
@@ -235,9 +228,9 @@ function ManageBooking() {
               <Button variant="ghost" onClick={() => setMode("cancel")}>
                 Aflys booking
               </Button>
-              <Button variant="ghost" onClick={addToCalendar}>
+              <a href={calendarUrl} className={buttonClasses("ghost")}>
                 Tilføj til kalender
-              </Button>
+              </a>
             </div>
           </div>
         )}

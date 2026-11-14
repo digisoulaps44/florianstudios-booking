@@ -91,7 +91,9 @@ function Login() {
               type="email"
               autoComplete="email"
               autoCapitalize="off"
+              autoCorrect="off"
               spellCheck={false}
+              enterKeyHint="next"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -102,6 +104,7 @@ function Login() {
               label={mode === "set-password" ? "Ny adgangskode" : "Adgangskode"}
               type="password"
               autoComplete={mode === "set-password" ? "new-password" : "current-password"}
+              enterKeyHint="go"
               hint={mode === "set-password" ? "Mindst 10 tegn." : undefined}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

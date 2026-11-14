@@ -79,6 +79,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "theme-color", content: "#010101" },
       { name: "color-scheme", content: "dark" },
+      // iOS gør ellers telefonnumre, datoer og adresser til blå links midt i designet.
+      { name: "format-detection", content: "telephone=no, date=no, address=no, email=no" },
       { title: "Book tid – Florian Studios" },
       {
         name: "description",

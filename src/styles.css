@@ -432,6 +432,21 @@
   }
 }
 
+/*
+ * Mens man skriver på en telefon (tastaturet er oppe), glider bundbjælker væk. iOS lader ellers
+ * fixed-bjælker hoppe rundt over tastaturet. Tastaturets "Næste"/"Gå" fører videre.
+ */
+@utility keyboard-hide {
+  transition: transform 220ms var(--ease-out);
+}
+
+@media (pointer: coarse) {
+  body:has(:is(input:not([type="checkbox"], [type="radio"]), textarea, select):focus)
+    .keyboard-hide {
+    transform: translateY(calc(100% + 4.5rem));
+  }
+}
+
 /* Installeret som app (PWA/App Store): ingen træk-for-at-genindlæse, der kaprer scroll. */
 @media (display-mode: standalone) {
   html,

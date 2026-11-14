@@ -1,4 +1,7 @@
-/** "Tilføj til kalender": en .ics-fil genereret i browseren (ingen server, ingen sporing). */
+/**
+ * Kalenderfil (iCalendar) for en booking. Serveres fra /api/public/kalender/<token> som
+ * text/calendar, så iPhone viser sit eget "Føj til kalender"-ark i stedet for en download.
+ */
 function icsDate(d: Date): string {
   return d
     .toISOString()
@@ -14,15 +17,19 @@ function escape(text: string): string {
     .replace(/\n/g, "\\n");
 }
 
-export function downloadIcs(opts: {
+export function buildIcs(opts: {
   uid: string;
   title: string;
   start: Date;
   end: Date;
   location: string;
   description: string;
-}) {
-  const body = [
+  url?: string | undefined;
+  cancelled?: boolean | undefined;
+  /** Påmindelse i kalenderen, minutter før. */
+  alarmMinutes?: number | undefined;
+}): string {
+  const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Florian Studios//Booking//DA",
@@ -36,15 +43,19 @@ export function downloadIcs(opts: {
     `SUMMARY:${escape(opts.title)}`,
     `LOCATION:${escape(opts.location)}`,
     `DESCRIPTION:${escape(opts.description)}`,
+    ...(opts.url ? [`URL:${opts.url}`] : []),
+    `STATUS:${opts.cancelled ? "CANCELLED" : "CONFIRMED"}`,
+    ...(opts.alarmMinutes && !opts.cancelled
+      ? [
+          "BEGIN:VALARM",
+          "ACTION:DISPLAY",
+          `DESCRIPTION:${escape(opts.title)}`,
+          `TRIGGER:-PT${opts.alarmMinutes}M`,
+          "END:VALARM",
+        ]
+      : []),
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n");
-  const url = URL.createObjectURL(new Blob([body], { type: "text/calendar;charset=utf-8" }));
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "florian-studios.ics";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  ];
+  return lines.join("\r\n") + "\r\n";
 }

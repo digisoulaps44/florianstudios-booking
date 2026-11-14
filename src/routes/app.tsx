@@ -12,7 +12,15 @@ import { fetchMe } from "@/lib/staff.functions";
 export const Route = createFileRoute("/app")({
   ssr: false,
   head: () => ({
-    meta: [{ title: "Florian Studios – medarbejdere" }, { name: "robots", content: "noindex" }],
+    meta: [
+      { title: "Florian Studios – medarbejdere" },
+      { name: "robots", content: "noindex" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      // Fuld skærm under statusbjælken – headeren har selv safe-area-afstand.
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Florian Studios" },
+    ],
     links: [
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
