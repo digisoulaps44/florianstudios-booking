@@ -1,11 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Mail, MessageCircle, Phone } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { z } from "zod";
 
 import { SummaryList } from "@/components/fs/booking";
 import {
   Button,
+  ButtonLink,
   Notice,
   Spinner,
   StatusBadge,
@@ -14,6 +16,7 @@ import {
 } from "@/components/fs/primitives";
 import { StaffSlotPicker, type PickedTime } from "@/components/fs/slot-picker";
 import { PageHeader } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { formatDateShort, formatDuration, formatPrice, formatTime, formatWhen } from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
 import { useBooking, useMe } from "@/lib/staff-data";
@@ -24,7 +27,19 @@ import {
 } from "@/lib/staff.functions";
 import { localDate, localTime } from "@/lib/tz";
 
-export const Route = createFileRoute("/app/booking/$id")({ component: BookingDetail });
+export const Route = createFileRoute("/app/booking/$id")({
+  // ?oprettet=true: kvittering lige efter "Opret booking" (fjernes fra adressen igen).
+  validateSearch: z.object({ oprettet: z.boolean().optional() }),
+  component: BookingDetail,
+});
+
+/** Hvordan kunden hører om ændringen – så medarbejderen ved, om der skal ringes. */
+function customerChannel(b: { customer_email: string | null; whatsapp_opt_in: boolean }) {
+  if (b.customer_email && b.whatsapp_opt_in) return "Kunden får besked på mail og WhatsApp.";
+  if (b.customer_email) return "Kunden får besked på mail.";
+  if (b.whatsapp_opt_in) return "Kunden får besked på WhatsApp.";
+  return "Kunden har ingen mail – giv selv besked.";
+}
 
 const EVENT_LABEL: Record<string, string> = {
   created: "Oprettet",
@@ -74,6 +89,12 @@ function focusOnMount(el: HTMLElement | null) {
 
 function BookingDetail() {
   const { id } = Route.useParams();
+  const search = Route.useSearch();
+  const navigate = useNavigate({ from: "/app/booking/$id" });
+  const [created] = useState(() => search.oprettet === true);
+  useEffect(() => {
+    if (search.oprettet) void navigate({ search: {}, replace: true });
+  }, [search.oprettet, navigate]);
   const me = useMe();
   const qc = useQueryClient();
   const q = useBooking(id);
@@ -116,6 +137,35 @@ function BookingDetail() {
   };
 
   const active = b.status === "confirmed";
+  const changeStatus = async (status: "completed" | "no_show" | "confirmed", label: string) => {
+    if (busy) return;
+    setBusy(true);
+    setMessage(undefined);
+    try {
+      const r = await setBookingStatus({ data: { bookingId: b.id, status } });
+      if (!r.ok) {
+        setMessage({ tone: "error", text: r.message });
+        return;
+      }
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: ["booking", id] }),
+        qc.invalidateQueries({ queryKey: ["bookings"] }),
+      ]);
+      notifySuccess(`${b.customer_name}: ${label}`, {
+        action:
+          status === "confirmed"
+            ? undefined
+            : {
+                label: "Fortryd",
+                onClick: () => void changeStatus("confirmed", "status sat tilbage til bekræftet"),
+              },
+      });
+    } catch {
+      setMessage({ tone: "error", text: "Status kunne ikke ændres. Prøv igen." });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <>
@@ -127,6 +177,26 @@ function BookingDetail() {
 
       <div className="grid max-w-text gap-8">
         {message ? <Notice tone={message.tone} title={message.text} live reveal /> : null}
+        {created && !message ? (
+          <Notice
+            tone="success"
+            live
+            reveal
+            title={`Booking oprettet: ${b.customer_name}, ${lowerFirst(formatWhen(start))}.`}
+            actions={
+              <>
+                <ButtonLink to="/app/ny" variant="ghost" className="text-text">
+                  Ny booking
+                </ButtonLink>
+                <ButtonLink to="/app" variant="ghost">
+                  Til i dag
+                </ButtonLink>
+              </>
+            }
+          >
+            {customerChannel(b)}
+          </Notice>
+        ) : null}
 
         <div className="flex flex-wrap gap-3">
           <a href={`tel:${b.customer_phone}`} className={buttonClasses("secondary", "sm")}>
@@ -189,26 +259,16 @@ function BookingDetail() {
             <div className="flex flex-wrap gap-3">
               <Button
                 size="sm"
-                disabled={busy}
-                onClick={() =>
-                  run(
-                    () => setBookingStatus({ data: { bookingId: b.id, status: "completed" } }),
-                    "Markeret som gennemført.",
-                  )
-                }
+                aria-disabled={busy || undefined}
+                onClick={() => void changeStatus("completed", "markeret som gennemført")}
               >
                 Gennemført
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
-                disabled={busy}
-                onClick={() =>
-                  run(
-                    () => setBookingStatus({ data: { bookingId: b.id, status: "no_show" } }),
-                    "Markeret som udeblevet.",
-                  )
-                }
+                aria-disabled={busy || undefined}
+                onClick={() => void changeStatus("no_show", "markeret som udeblevet")}
               >
                 Udeblevet
               </Button>
@@ -228,20 +288,15 @@ function BookingDetail() {
           <Button
             variant="ghost"
             className="justify-self-start"
-            disabled={busy}
-            onClick={() =>
-              run(
-                () => setBookingStatus({ data: { bookingId: b.id, status: "confirmed" } }),
-                "Status sat tilbage til bekræftet.",
-              )
-            }
+            aria-disabled={busy || undefined}
+            onClick={() => void changeStatus("confirmed", "status sat tilbage til bekræftet")}
           >
             Fortryd status
           </Button>
         ) : null}
 
         {mode === "move" ? (
-          <section aria-label="Flyt tid" className="grid gap-6 border-t border-line pt-8">
+          <section aria-label="Flyt tid" className="rise-in grid gap-6 border-t border-line pt-8">
             <h2 ref={focusOnMount} tabIndex={-1} className="text-2xl leading-8 text-text">
               Flyt tid.
             </h2>
@@ -258,8 +313,8 @@ function BookingDetail() {
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-3">
               <Button
-                disabled={!picked || busy}
-                aria-busy={busy || undefined}
+                disabled={!picked}
+                loading={busy}
                 onClick={() =>
                   picked &&
                   run(
@@ -271,7 +326,7 @@ function BookingDetail() {
                           ignoreSchedule: picked.ignoreSchedule,
                         },
                       }),
-                    `Flyttet til ${lowerFirst(formatWhen(new Date(picked.startsAt)))}.`,
+                    `Flyttet til ${lowerFirst(formatWhen(new Date(picked.startsAt)))}. ${customerChannel(b)}`,
                   )
                 }
               >
@@ -285,7 +340,7 @@ function BookingDetail() {
         ) : null}
 
         {mode === "cancel" ? (
-          <section aria-label="Aflys" className="grid gap-4 border-t border-line pt-8">
+          <section aria-label="Aflys" className="rise-in grid gap-4 border-t border-line pt-8">
             <h2 ref={focusOnMount} tabIndex={-1} className="text-2xl leading-8 text-text">
               Aflys booking?
             </h2>
@@ -295,11 +350,11 @@ function BookingDetail() {
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-3">
               <Button
-                disabled={busy}
+                loading={busy}
                 onClick={() =>
                   run(
                     () => cancelStaffBooking({ data: { bookingId: b.id, reason: "" } }),
-                    "Bookingen er aflyst.",
+                    `Bookingen er aflyst, og tiden er ledig igen. ${customerChannel(b)}`,
                   )
                 }
               >

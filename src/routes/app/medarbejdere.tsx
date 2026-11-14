@@ -4,6 +4,7 @@ import { useState, type FormEvent } from "react";
 
 import { Button, Monogram, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { useMe, useStaffList } from "@/lib/staff-data";
 import { inviteStaffSchema } from "@/lib/staff-schemas";
 import { inviteStaffMember, setStaffMemberActive } from "@/lib/staff.functions";
@@ -53,9 +54,8 @@ function StaffAdmin() {
     try {
       const r = await inviteStaffMember({ data: parsed.data });
       if (r.ok) {
-        setMsg({
-          tone: "success",
-          text: `Invitation sendt til ${email}. Medarbejderen vælger selv adgangskode via linket.`,
+        notifySuccess(`Invitation sendt til ${parsed.data.displayName}`, {
+          description: `Mailen går til ${parsed.data.email}. Vedkommende vælger selv adgangskode og dukker op her ved første login.`,
         });
         setName("");
         setEmail("");
@@ -71,16 +71,15 @@ function StaffAdmin() {
 
   const toggle = async (staffId: string, active: boolean) => {
     const r = await setStaffMemberActive({ data: { staffId, active } });
-    setMsg(
-      r.ok
-        ? {
-            tone: "success",
-            text: active
-              ? "Medarbejderen er aktiveret."
-              : "Medarbejderen er deaktiveret. Eksisterende bookinger er bevaret.",
-          }
-        : { tone: "error", text: r.message },
-    );
+    const who = staff.data?.find((s) => s.id === staffId)?.display_name ?? "Medarbejderen";
+    if (r.ok) {
+      setMsg(undefined);
+      notifySuccess(active ? `${who} er aktiveret` : `${who} er deaktiveret`, {
+        description: active
+          ? "Kan logge ind og bookes online igen."
+          : "Kan ikke logge ind eller bookes online. Eksisterende bookinger er bevaret.",
+      });
+    } else setMsg({ tone: "error", text: r.message });
     await qc.invalidateQueries({ queryKey: ["staff"] });
   };
 

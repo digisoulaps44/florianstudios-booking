@@ -26,7 +26,7 @@ export function buttonClasses(
   className?: string,
 ) {
   const base =
-    "inline-flex items-center justify-center gap-3 whitespace-nowrap text-xs font-medium uppercase tracking-[0.18em] transition-colors disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 [&_svg]:shrink-0";
+    "press inline-flex items-center justify-center gap-3 whitespace-nowrap text-xs font-medium uppercase tracking-[0.18em] disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:cursor-not-allowed aria-disabled:opacity-60 [&_svg]:shrink-0";
   const variants: Record<ButtonVariant, string> = {
     primary: "bg-bone text-ink hover:bg-bone/90",
     secondary: "border border-control text-text hover:bg-bone hover:text-ink",
@@ -49,16 +49,36 @@ export function buttonClasses(
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /** Arbejder: viser en spinner i knappen. Knappen bevarer fokus (aria-disabled, ikke disabled). */
+  loading?: boolean | undefined;
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { variant = "primary", size = "md", className, type = "button", ...rest },
+  { variant = "primary", size = "md", className, type = "button", loading, children, ...rest },
   ref,
 ) {
   return (
-    <button ref={ref} type={type} className={buttonClasses(variant, size, className)} {...rest} />
+    <button
+      ref={ref}
+      type={type}
+      className={buttonClasses(variant, size, className)}
+      {...rest}
+      {...(loading ? { "aria-busy": true, "aria-disabled": true } : {})}
+    >
+      {loading ? <ButtonSpinner /> : null}
+      {children}
+    </button>
   );
 });
+
+function ButtonSpinner() {
+  return (
+    <span
+      aria-hidden="true"
+      className="spin-fast inline-block h-4 w-4 shrink-0 rounded-full border-2 border-current border-r-transparent"
+    />
+  );
+}
 
 export function ButtonLink({
   variant = "primary",
@@ -139,6 +159,7 @@ export function Notice({
       role={tone === "error" ? "alert" : live ? "status" : undefined}
       className={cn(
         "flex items-start gap-3 border bg-ink-3 p-4",
+        reveal && "rise-in",
         tone === "error" ? "border-closed" : "border-control",
         className,
       )}
@@ -187,6 +208,25 @@ export function StatusBadge({ status, className }: { status: BookingStatus; clas
   );
 }
 
+/** Succes: cirklen tegnes, derefter fluebenet (ui-motion / success-states). */
+export function SuccessMark({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 52 52"
+      className={cn("h-12 w-12 text-open", className)}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle className="draw-circle" cx="26" cy="26" r="24" transform="rotate(-90 26 26)" />
+      <path className="draw-tick" d="M15 27l7 7 15-16" />
+    </svg>
+  );
+}
+
 export function StatusDot({ open }: { open: boolean }) {
   return (
     <span
@@ -213,6 +253,17 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
   const inputId = id ?? auto;
   const hintId = hint ? `${inputId}-hint` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
+  const boxRef = useRef<HTMLDivElement>(null);
+  // Feltet ryster kort, når en fejl dukker op: "nej" før man har læst teksten. Teksten bliver.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!error || !el || typeof el.animate !== "function") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    el.animate(
+      [0, -8, 8, -6, 6, -3, 3, 0].map((x) => ({ transform: `translateX(${x}px)` })),
+      { duration: 420, easing: "ease-out" },
+    );
+  }, [error]);
   return (
     <div className={cn("grid gap-2", className)}>
       <label htmlFor={inputId} className="text-sm font-medium text-text">
@@ -225,6 +276,7 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
         </p>
       ) : null}
       <div
+        ref={boxRef}
         className={cn(
           "flex items-stretch border bg-ink-3 transition-colors focus-within:border-bone focus-within:outline-2 focus-within:outline-offset-3 focus-within:outline-focus",
           error ? "border-closed" : "border-control",

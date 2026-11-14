@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Button, Notice, Spinner } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { formatDateShort, formatTime } from "@/lib/format";
 import { useFailedMessages, useMe } from "@/lib/staff-data";
 import { retryFailedMessage } from "@/lib/staff.functions";
@@ -37,11 +38,12 @@ function FailedMessages() {
 
   const retry = async (id: string) => {
     const r = await retryFailedMessage({ data: { jobId: id } });
-    setMsg(
-      r.ok
-        ? { tone: "success", text: "Beskeden sendes igen inden for et minut." }
-        : { tone: "error", text: r.message },
-    );
+    if (r.ok) {
+      setMsg(undefined);
+      notifySuccess("Beskeden sendes igen", {
+        description: "Inden for et minut. Den forsvinder herfra, når den er sendt.",
+      });
+    } else setMsg({ tone: "error", text: r.message });
     await qc.invalidateQueries({ queryKey: ["failed-messages"] });
   };
 

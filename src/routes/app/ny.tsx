@@ -71,7 +71,12 @@ function NewBooking() {
           idempotencyKey: idem,
         },
       });
-      if (r.ok) await navigate({ to: "/app/booking/$id", params: { id: r.bookingId } });
+      if (r.ok)
+        await navigate({
+          to: "/app/booking/$id",
+          params: { id: r.bookingId },
+          search: { oprettet: true },
+        });
       else setProblem(r.message);
     } catch {
       setProblem("Bookingen kunne ikke oprettes. Prøv igen.");
@@ -165,6 +170,8 @@ function NewBooking() {
             id="ny-name"
             label="Navn"
             autoComplete="off"
+            autoCapitalize="words"
+            enterKeyHint="next"
             value={customer.name}
             onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
             error={errors["name"]}
@@ -212,13 +219,9 @@ function NewBooking() {
           </label>
         </section>
 
-        <div className="pb-safe sticky bottom-16 z-10 -mx-gutter border-t border-line-strong bg-ink/95 px-gutter pt-3 backdrop-blur md:bottom-0">
-          <Button
-            type="submit"
-            aria-disabled={busy || undefined}
-            aria-busy={busy || undefined}
-            className="w-full sm:w-auto"
-          >
+        {/* Over fanebjælken – også med home-indikatoren på iPhone (--tabbar-h). */}
+        <div className="glass sticky bottom-(--tabbar-h) z-10 -mx-gutter border-t border-line-strong px-gutter py-3 md:bottom-0">
+          <Button type="submit" loading={busy} className="w-full sm:w-auto">
             {busy ? "Opretter …" : "Opret booking"}
           </Button>
         </div>

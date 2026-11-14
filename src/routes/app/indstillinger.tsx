@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { Button, CheckboxRow, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
 import { disablePush, enablePush, pushState, type PushState } from "@/lib/push";
 import { useMe, useStaffList } from "@/lib/staff-data";
@@ -40,11 +41,11 @@ function Settings() {
   ) => {
     if (!mine) return;
     const { error } = await supabase.from("staff").update(values).eq("id", mine.id);
-    setMsg(
-      error
-        ? { tone: "error", text: `Kunne ikke gemmes: ${error.message}` }
-        : { tone: "success", text },
-    );
+    if (error) setMsg({ tone: "error", text: "Indstillingen kunne ikke gemmes. Prøv igen." });
+    else {
+      setMsg(undefined);
+      notifySuccess(text.replace(/\.$/, ""));
+    }
     await qc.invalidateQueries({ queryKey: ["staff"] });
   };
 
@@ -159,6 +160,7 @@ function PushControl({ userId }: { userId: string }) {
   if (!state) return <Spinner label="Tjekker push …" />;
 
   const toggle = async () => {
+    if (busy) return;
     setBusy(true);
     setError(undefined);
     try {
@@ -205,8 +207,7 @@ function PushControl({ userId }: { userId: string }) {
             size="sm"
             className="justify-self-start"
             onClick={toggle}
-            disabled={busy}
-            aria-busy={busy || undefined}
+            loading={busy}
           >
             {state.kind === "on" ? "Slå push fra" : "Slå notifikationer til"}
           </Button>

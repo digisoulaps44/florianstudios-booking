@@ -416,6 +416,7 @@ export type ManagedBooking = {
   booking: BookingSummary;
   canChange: boolean;
   cutoffHours: number;
+  reminderHours: number;
   salonPhone: string;
   staffTreatmentId: string | null;
 };
@@ -439,6 +440,7 @@ export async function getManagedBooking(
     booking: summary,
     canChange: summary.status === "confirmed" && Date.now() <= cutoff,
     cutoffHours: settings.cancellation_cutoff_hours,
+    reminderHours: settings.reminder_hours_before,
     salonPhone: settings.phone,
     staffTreatmentId: raw.data?.staff_treatment_id ?? null,
   };

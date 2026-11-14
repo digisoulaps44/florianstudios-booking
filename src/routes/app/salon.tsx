@@ -4,6 +4,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { Button, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
 import { useMe, useSettings } from "@/lib/staff-data";
 
@@ -114,11 +115,17 @@ function SalonSettings() {
       })
       .eq("id", 1);
     setBusy(false);
-    setMsg(
-      error
-        ? { tone: "error", text: "Indstillingerne kunne ikke gemmes. Tjek felterne, og prøv igen." }
-        : { tone: "success", text: "Indstillingerne er gemt." },
-    );
+    if (error)
+      setMsg({
+        tone: "error",
+        text: "Indstillingerne kunne ikke gemmes. Tjek felterne, og prøv igen.",
+      });
+    else {
+      setMsg(undefined);
+      notifySuccess("Salonindstillingerne er gemt", {
+        description: `Afbestillingsfrist ${form.cancellation_cutoff_hours} t · påmindelse ${form.reminder_hours_before} t før · bookbart ${form.booking_horizon_days} dage frem.`,
+      });
+    }
     await qc.invalidateQueries({ queryKey: ["settings"] });
   };
 

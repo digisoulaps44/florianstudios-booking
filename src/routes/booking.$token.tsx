@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Navigation } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
@@ -18,7 +18,8 @@ import {
   Notice,
   Spinner,
   StatusBadge,
-  StatusDot,
+  SuccessMark,
+  buttonClasses,
 } from "@/components/fs/primitives";
 import {
   fetchManagedBooking,
@@ -39,6 +40,7 @@ import { downloadIcs } from "@/lib/ics";
 import { addDays, localDate } from "@/lib/tz";
 
 const ADDRESS = "Toggangen 1, 2730 Herlev";
+const MAPS_URL = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Florian Studios, ${ADDRESS}`)}`;
 
 export const Route = createFileRoute("/booking/$token")({
   validateSearch: z.object({ ny: z.coerce.number().optional() }),
@@ -112,8 +114,8 @@ function ManageBooking() {
       <CustomerShell>
         <div className="grid gap-8">
           <div className="grid gap-4">
-            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.2em] text-text">
-              <StatusDot open />
+            <SuccessMark />
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-text">
               Booking bekræftet
             </p>
             <h1
@@ -130,14 +132,26 @@ function ManageBooking() {
           {summary}
           <Notice tone="success" title="Bekræftelsen er på vej." live>
             Vi sender den til {b.customerEmail}
-            {b.whatsappOptIn ? " og på WhatsApp" : ""}. Du får en påmindelse inden din tid. Gem
-            linket i mailen – det er din adgang til at ændre eller aflyse.
+            {b.whatsappOptIn ? " og på WhatsApp" : ""}.
+            {start.getTime() - Date.now() > result.reminderHours * 3600_000
+              ? ` Du får en påmindelse ${result.reminderHours === 24 ? "dagen før" : `${result.reminderHours} timer før`}.`
+              : ""}{" "}
+            Gem linket i mailen – det er din adgang til at ændre eller aflyse.
           </Notice>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
             <Button onClick={addToCalendar}>
               <Calendar aria-hidden="true" className="h-4 w-4" />
               Tilføj til kalender
             </Button>
+            <a
+              href={MAPS_URL}
+              target="_blank"
+              rel="noreferrer"
+              className={buttonClasses("secondary")}
+            >
+              <Navigation aria-hidden="true" className="h-4 w-4" />
+              Vis vej
+            </a>
             <Button variant="ghost" onClick={() => navigate({ search: {}, replace: true })}>
               Ændr eller aflys
             </Button>
@@ -343,7 +357,7 @@ function MoveBooking({
         )
       ) : null}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-        <Button onClick={save} disabled={!slot || busy} aria-busy={busy || undefined}>
+        <Button onClick={save} disabled={!slot} loading={busy}>
           {busy ? "Flytter …" : slot ? `Flyt til kl. ${slot.time}` : "Vælg en tid"}
         </Button>
         <Button variant="ghost" onClick={onCancel}>
@@ -385,7 +399,7 @@ function CancelBooking({
       <p className="text-base text-text-2">Tiden bliver ledig for andre. Det kan ikke fortrydes.</p>
       {error ? <Notice tone="error" title={error} reveal /> : null}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
-        <Button onClick={confirm} disabled={busy} aria-busy={busy || undefined}>
+        <Button onClick={confirm} loading={busy}>
           {busy ? "Aflyser …" : "Ja, aflys"}
         </Button>
         <Button variant="ghost" onClick={onKeep}>

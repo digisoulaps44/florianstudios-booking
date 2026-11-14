@@ -5,6 +5,7 @@ import { z } from "zod";
 
 import { Button, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDuration, formatPrice } from "@/lib/format";
 import {
@@ -126,7 +127,9 @@ function StaffTreatments({ staffId }: { staffId: string }) {
     }
     setName("");
     setPrice("");
-    setMsg({ tone: "success", text: `${trimmed} er tilføjet.` });
+    notifySuccess(`${trimmed} er tilføjet`, {
+      description: `${formatPrice(p)} · ${formatDuration(d)}${b ? ` + ${b} min buffer` : ""}. Kunderne kan booke den nu.`,
+    });
     await invalidate();
   };
 
@@ -222,11 +225,23 @@ function OfferRow({
     }>,
   ) => {
     const { error } = await supabase.from("staff_treatments").update(patch).eq("id", offer.id);
-    if (error) onError(error.message);
-    else {
-      setEdit(false);
-      onSaved();
+    if (error) {
+      onError(error.message);
+      return false;
     }
+    setEdit(false);
+    onSaved();
+    return true;
+  };
+  const name = offer.treatment?.name ?? "Behandlingen";
+  const toggleActive = async (active: boolean, undoable = true) => {
+    if (!(await save({ active }))) return;
+    notifySuccess(active ? `${name} kan bookes igen` : `${name} er skjult for kunder`, {
+      description: active ? undefined : "Eksisterende bookinger bevares.",
+      action: undoable
+        ? { label: "Fortryd", onClick: () => void toggleActive(!active, false) }
+        : undefined,
+    });
   };
 
   return (
@@ -241,7 +256,7 @@ function OfferRow({
           {offer.treatment?.name}
         </span>
         <span aria-hidden="true" className="flex-1 border-b border-dotted border-line-strong" />
-        <span className="whitespace-nowrap font-display text-2xl leading-8 text-text">
+        <span className="tabular whitespace-nowrap font-display text-2xl leading-8 text-text">
           {formatPrice(offer.price_ore)}
         </span>
       </div>
@@ -273,13 +288,17 @@ function OfferRow({
           <div className="flex flex-wrap gap-x-6 sm:col-span-3">
             <Button
               size="sm"
-              onClick={() =>
-                save({
+              onClick={async () => {
+                const ok = await save({
                   price_ore: ore(price),
                   duration_minutes: Number(duration),
                   buffer_minutes: Number(buffer),
-                })
-              }
+                });
+                if (ok)
+                  notifySuccess(`${name} er opdateret`, {
+                    description: `${formatPrice(ore(price))} · ${formatDuration(Number(duration))}. Gælder nye bookinger.`,
+                  });
+              }}
             >
               Gem
             </Button>
@@ -293,7 +312,7 @@ function OfferRow({
           <Button variant="ghost" onClick={() => setEdit(true)}>
             Ret pris og tid
           </Button>
-          <Button variant="ghost" onClick={() => save({ active: !offer.active })}>
+          <Button variant="ghost" onClick={() => void toggleActive(!offer.active)}>
             {offer.active ? "Skjul for kunder" : "Gør bookbar"}
           </Button>
         </div>

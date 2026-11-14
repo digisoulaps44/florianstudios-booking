@@ -4,7 +4,7 @@
  */
 import { Link, useRouterState } from "@tanstack/react-router";
 import { AlertTriangle, Bell, CalendarDays, Clock, Menu, Plus, Scissors } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import {
   workingWindows,
@@ -29,6 +29,16 @@ const TABS = [
 
 export function AppShell({ children, unread }: { children: ReactNode; unread: number }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const activeIndex = TABS.findIndex((t) =>
+    "exact" in t ? path === t.to || path === `${t.to}/` : path.startsWith(t.to),
+  );
+  // Ny ulæst besked: klokken svinger én gang, og mærket popper. Aldrig i løkke.
+  const [ring, setRing] = useState(0);
+  const previous = useRef(unread);
+  useEffect(() => {
+    if (unread > previous.current) setRing((n) => n + 1);
+    previous.current = unread;
+  }, [unread]);
   return (
     <div className="min-h-dvh bg-ink">
       <a
@@ -37,7 +47,7 @@ export function AppShell({ children, unread }: { children: ReactNode; unread: nu
       >
         Spring til indhold
       </a>
-      <header className="sticky top-0 z-(--z-header) border-b border-line bg-ink/95 pt-[env(safe-area-inset-top)] backdrop-blur-sm">
+      <header className="glass sticky top-0 z-(--z-header) border-b border-line pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex h-14 max-w-site items-center justify-between gap-3 px-gutter">
           <Link
             to="/app"
@@ -75,8 +85,18 @@ export function AppShell({ children, unread }: { children: ReactNode; unread: nu
       </main>
       <nav
         aria-label="Faner"
-        className="pb-safe fixed inset-x-0 bottom-0 z-(--z-bookbar) border-t border-line-strong bg-ink/95 backdrop-blur md:hidden"
+        className="glass pb-safe fixed inset-x-0 bottom-0 z-(--z-bookbar) border-t border-line-strong md:hidden"
       >
+        {activeIndex >= 0 ? (
+          // Markeringen glider til den nye fane i stedet for at hoppe – øjet følger med.
+          <span
+            aria-hidden="true"
+            className="absolute top-0 left-0 h-0.5 w-1/5 transition-transform duration-300 ease-(--ease-out)"
+            style={{ transform: `translateX(${activeIndex * 100}%)` }}
+          >
+            <span className="mx-auto block h-full w-8 bg-bone" />
+          </span>
+        ) : null}
         <ul className="grid grid-cols-5">
           {TABS.map((t) => {
             const active =
@@ -88,14 +108,21 @@ export function AppShell({ children, unread }: { children: ReactNode; unread: nu
                   to={t.to}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "relative flex min-h-14 flex-col items-center justify-center gap-1 text-[10px] font-medium uppercase tracking-[0.15em]",
+                    "press relative flex min-h-14 flex-col items-center justify-center gap-1 text-[10px] font-medium uppercase tracking-[0.15em]",
                     active ? "text-text" : "text-text-muted",
                   )}
                 >
-                  <Icon aria-hidden="true" className="h-5 w-5" />
+                  <Icon
+                    key={t.to === "/app/notifikationer" ? `bell-${ring}` : undefined}
+                    aria-hidden="true"
+                    className={cn(
+                      "h-5 w-5",
+                      t.to === "/app/notifikationer" && ring > 0 && "bell-swing",
+                    )}
+                  />
                   {t.label}
                   {t.to === "/app/notifikationer" && unread > 0 ? (
-                    <span className="absolute top-2 left-1/2 ml-2">
+                    <span key={`badge-${ring}`} className="badge-pop absolute top-2 left-1/2 ml-2">
                       <UnreadCount n={unread} />
                     </span>
                   ) : null}
@@ -149,18 +176,36 @@ export function Segmented<T extends string>({
   onChange: (v: T) => void;
   label: string;
 }) {
+  const index = Math.max(
+    0,
+    options.findIndex((o) => o.value === value),
+  );
   return (
-    <div role="group" aria-label={label} className="inline-flex border border-control">
-      {options.map((o, i) => (
+    <div
+      role="group"
+      aria-label={label}
+      className="relative inline-grid auto-cols-fr grid-flow-col border border-control"
+    >
+      {/* Den valgte flade glider mellem knapperne (samme bredde) i stedet for at skifte på stedet. */}
+      <span
+        aria-hidden="true"
+        className="absolute inset-y-0 left-0 bg-bone transition-transform duration-300 ease-(--ease-out)"
+        style={
+          {
+            width: `${100 / options.length}%`,
+            transform: `translateX(${index * 100}%)`,
+          } as CSSProperties
+        }
+      />
+      {options.map((o) => (
         <button
           key={o.value}
           type="button"
           aria-pressed={o.value === value}
           onClick={() => onChange(o.value)}
           className={cn(
-            "min-h-11 min-w-18 px-4 text-xs font-medium uppercase tracking-[0.18em]",
-            i > 0 && "border-l border-control",
-            o.value === value ? "bg-bone text-ink" : "text-text-2 hover:text-text",
+            "press relative min-h-11 min-w-18 px-4 text-xs font-medium uppercase tracking-[0.18em]",
+            o.value === value ? "text-ink" : "text-text-2 hover:text-text",
           )}
         >
           {o.label}
@@ -374,7 +419,7 @@ export function DayAgenda({
                 <button
                   type="button"
                   onClick={() => onBookGap(item.start > now ? item.start : now)}
-                  className="min-h-11 text-xs font-medium uppercase tracking-[0.18em] text-text-2 underline-offset-4 hover:text-text hover:underline"
+                  className="press min-h-11 text-xs font-medium uppercase tracking-[0.18em] text-text-2 underline-offset-4 hover:text-text hover:underline"
                 >
                   Book
                 </button>

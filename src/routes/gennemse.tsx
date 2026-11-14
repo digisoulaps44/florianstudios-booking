@@ -120,11 +120,7 @@ function Review() {
           summary={`${options.treatmentName} · ${formatPrice(offer.priceOre)}`}
           sub={formatWhen(start)}
         >
-          <Button
-            onClick={confirm}
-            disabled={submitting || !contactValid}
-            aria-busy={submitting || undefined}
-          >
+          <Button onClick={confirm} disabled={!contactValid} loading={submitting}>
             {submitting ? "Booker …" : "Bekræft booking"}
           </Button>
         </BookBar>

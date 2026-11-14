@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { Button, Notice, Spinner } from "@/components/fs/primitives";
 import { PageHeader, findConflicts } from "@/components/fs/staff";
+import { notifySuccess } from "@/lib/notify";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateShort, formatTime, formatWhen } from "@/lib/format";
 import {
@@ -130,6 +131,7 @@ function WeeklyEditor({ staffId }: { staffId: string }) {
   const update = (day: number, next: Row[]) => setDraft({ ...rows, [day]: next });
 
   const save = async () => {
+    if (busy) return;
     const invalid = Object.values(rows)
       .flat()
       .find((r) => !(r.end > r.start));
@@ -160,7 +162,9 @@ function WeeklyEditor({ staffId }: { staffId: string }) {
       setMsg({ tone: "error", text: `Arbejdstiderne kunne ikke gemmes: ${ins.error.message}` });
     else {
       setDraft(null);
-      setMsg({ tone: "success", text: "Arbejdstiderne er gemt." });
+      notifySuccess("Arbejdstiderne er gemt", {
+        description: "Ledige tider er opdateret. Eksisterende bookinger er ikke flyttet.",
+      });
       await qc.invalidateQueries({ queryKey: ["weekly", staffId] });
     }
   };
@@ -272,7 +276,7 @@ function WeeklyEditor({ staffId }: { staffId: string }) {
         })}
       </ul>
       <div className="flex flex-wrap gap-x-6 gap-y-3">
-        <Button onClick={save} disabled={!draft || busy} aria-busy={busy || undefined}>
+        <Button onClick={save} disabled={!draft} loading={busy}>
           {busy ? "Gemmer …" : "Gem arbejdstider"}
         </Button>
         {draft ? (
@@ -330,7 +334,13 @@ function Exceptions({ staffId }: { staffId: string }) {
     });
     if (error) setMsg({ tone: "error", text: `Kunne ikke gemmes: ${error.message}` });
     else {
-      setMsg({ tone: "success", text: `${KIND_LABEL[kind]} er gemt.` });
+      setMsg(undefined);
+      notifySuccess(`${KIND_LABEL[kind]} er gemt`, {
+        description:
+          formatDateShort(starts) === formatDateShort(new Date(ends.getTime() - 1))
+            ? `${formatDateShort(starts)}. Ledige tider er opdateret.`
+            : `${formatDateShort(starts)}–${formatDateShort(new Date(ends.getTime() - 1))}. Ledige tider er opdateret.`,
+      });
       setNote("");
       await qc.invalidateQueries({ queryKey: ["exceptions"] });
     }

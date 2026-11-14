@@ -108,7 +108,7 @@ function Login() {
               required
             />
           ) : null}
-          <Button type="submit" disabled={busy} aria-busy={busy || undefined}>
+          <Button type="submit" loading={busy}>
             {busy
               ? "Et øjeblik …"
               : mode === "login"
