@@ -176,7 +176,7 @@ function WeeklyEditor({ staffId }: { staffId: string }) {
         Ændringer flytter eller sletter aldrig eksisterende bookinger. Bookinger uden for de nye
         tider vises som konflikter.
       </p>
-      {msg ? <Notice tone={msg.tone} title={msg.text} live /> : null}
+      {msg ? <Notice tone={msg.tone} title={msg.text} live reveal /> : null}
       <ul className="border-y border-line">
         {DAYS.map((label, i) => {
           const day = i + 1;
@@ -365,7 +365,7 @@ function Exceptions({ staffId }: { staffId: string }) {
           </ul>
         </Notice>
       ) : null}
-      {msg ? <Notice tone={msg.tone} title={msg.text} live /> : null}
+      {msg ? <Notice tone={msg.tone} title={msg.text} live reveal /> : null}
       <form onSubmit={add} className="grid gap-4 border border-line-strong p-4">
         <label className="grid gap-2">
           <span className="text-sm font-medium text-text">Type</span>

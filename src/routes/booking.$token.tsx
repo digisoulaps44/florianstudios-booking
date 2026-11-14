@@ -172,7 +172,7 @@ function ManageBooking() {
           </div>
         </div>
 
-        {message ? <Notice tone={message.tone} title={message.text} live /> : null}
+        {message ? <Notice tone={message.tone} title={message.text} live reveal /> : null}
 
         {summary}
 
@@ -305,7 +305,7 @@ function MoveBooking({
     <section aria-label="Flyt tid" className="grid gap-8 border-t border-line pt-8">
       <h2 className="text-2xl leading-8 text-text">Vælg ny tid.</h2>
       {error ? (
-        <Notice tone="error" title={error}>
+        <Notice tone="error" title={error} reveal>
           Din oprindelige tid er bevaret.
         </Notice>
       ) : null}
@@ -383,7 +383,7 @@ function CancelBooking({
     <section aria-label="Aflys booking" className="grid gap-6 border-t border-line pt-8">
       <h2 className="text-2xl leading-8 text-text">Aflys booking?</h2>
       <p className="text-base text-text-2">Tiden bliver ledig for andre. Det kan ikke fortrydes.</p>
-      {error ? <Notice tone="error" title={error} /> : null}
+      {error ? <Notice tone="error" title={error} reveal /> : null}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
         <Button onClick={confirm} disabled={busy} aria-busy={busy || undefined}>
           {busy ? "Aflyser …" : "Ja, aflys"}

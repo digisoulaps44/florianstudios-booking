@@ -44,6 +44,15 @@ const CHANNEL_LABEL: Record<string, string> = {
   push: "Push",
   sms: "SMS",
 };
+const TEMPLATE_LABEL: Record<string, string> = {
+  booking_confirmed: "Bekræftelse",
+  booking_changed: "Ændring",
+  booking_cancelled: "Aflysning",
+  booking_reminder: "Påmindelse",
+  staff_booking_confirmed: "Ny booking",
+  staff_booking_changed: "Flyttet",
+  staff_booking_cancelled: "Aflyst",
+};
 const JOB_STATUS: Record<string, string> = {
   pending: "Venter",
   processing: "Sendes",
@@ -53,6 +62,15 @@ const JOB_STATUS: Record<string, string> = {
   failed: "Fejlet",
   cancelled: "Annulleret",
 };
+
+function lowerFirst(text: string) {
+  return text.charAt(0).toLowerCase() + text.slice(1);
+}
+
+/** Flyt fokus til overskriften, når "Flyt tid" eller "Aflys" åbnes – knappen, man trykkede på, forsvinder. */
+function focusOnMount(el: HTMLElement | null) {
+  el?.focus();
+}
 
 function BookingDetail() {
   const { id } = Route.useParams();
@@ -108,7 +126,7 @@ function BookingDetail() {
       />
 
       <div className="grid max-w-text gap-8">
-        {message ? <Notice tone={message.tone} title={message.text} live /> : null}
+        {message ? <Notice tone={message.tone} title={message.text} live reveal /> : null}
 
         <div className="flex flex-wrap gap-3">
           <a href={`tel:${b.customer_phone}`} className={buttonClasses("secondary", "sm")}>
@@ -224,7 +242,9 @@ function BookingDetail() {
 
         {mode === "move" ? (
           <section aria-label="Flyt tid" className="grid gap-6 border-t border-line pt-8">
-            <h2 className="text-2xl leading-8 text-text">Flyt tid.</h2>
+            <h2 ref={focusOnMount} tabIndex={-1} className="text-2xl leading-8 text-text">
+              Flyt tid.
+            </h2>
             <StaffSlotPicker
               staffTreatmentId={b.staff_treatment_id ?? undefined}
               initialDate={localDate(start)}
@@ -251,7 +271,7 @@ function BookingDetail() {
                           ignoreSchedule: picked.ignoreSchedule,
                         },
                       }),
-                    `Flyttet til ${formatWhen(new Date(picked.startsAt))}.`,
+                    `Flyttet til ${lowerFirst(formatWhen(new Date(picked.startsAt)))}.`,
                   )
                 }
               >
@@ -266,7 +286,9 @@ function BookingDetail() {
 
         {mode === "cancel" ? (
           <section aria-label="Aflys" className="grid gap-4 border-t border-line pt-8">
-            <h2 className="text-2xl leading-8 text-text">Aflys booking?</h2>
+            <h2 ref={focusOnMount} tabIndex={-1} className="text-2xl leading-8 text-text">
+              Aflys booking?
+            </h2>
             <p className="text-base text-text-2">
               Kunden får besked på mail{b.whatsapp_opt_in ? " og WhatsApp" : ""}. Tiden bliver ledig
               igen.
@@ -312,8 +334,9 @@ function BookingDetail() {
                   className="flex flex-wrap items-baseline justify-between gap-2 text-sm"
                 >
                   <span className="text-text">
-                    {CHANNEL_LABEL[j.channel]} ·{" "}
-                    {j.recipient_kind === "customer" ? "kunde" : "medarbejder"} · {j.template}
+                    {CHANNEL_LABEL[j.channel] ?? j.channel} til{" "}
+                    {j.recipient_kind === "customer" ? "kunden" : "medarbejderen"} ·{" "}
+                    {TEMPLATE_LABEL[j.template] ?? j.template}
                   </span>
                   <span className={j.status === "failed" ? "text-closed" : "text-text-2"}>
                     {JOB_STATUS[j.status] ?? j.status}

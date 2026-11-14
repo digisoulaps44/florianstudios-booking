@@ -54,7 +54,7 @@ function Settings() {
     <>
       <PageHeader eyebrow="Indstillinger" title="Notifikationer og profil." />
       <div className="grid max-w-text gap-12">
-        {msg ? <Notice tone={msg.tone} title={msg.text} live /> : null}
+        {msg ? <Notice tone={msg.tone} title={msg.text} live reveal /> : null}
         {!mine ? (
           <Notice title="Du har ingen medarbejderprofil.">
             Notifikationer kræver en profil. Opret dig selv under Medarbejdere.
@@ -173,7 +173,7 @@ function PushControl({ userId }: { userId: string }) {
   return (
     <div className="grid gap-4 border border-line-strong p-4">
       <p className="text-base font-medium text-text">Push på denne enhed</p>
-      {error ? <Notice tone="error" title={error} /> : null}
+      {error ? <Notice tone="error" title={error} reveal /> : null}
       {state.kind === "ios-needs-install" ? (
         <Notice title="Føj appen til hjemmeskærmen.">
           På iPhone virker notifikationer kun fra hjemmeskærmen: tryk på Del{" "}

@@ -56,6 +56,8 @@ function NewBooking() {
     if (!offer) nextErrors["offer"] = "Vælg en behandling.";
     if (!picked) nextErrors["time"] = "Vælg et tidspunkt.";
     setErrors(nextErrors);
+    const first = ["offer", "time", "name", "phone", "email"].find((k) => nextErrors[k]);
+    if (first) document.getElementById(`ny-${first}`)?.focus();
     if (Object.keys(nextErrors).length || !offer || !picked) return;
     setBusy(true);
     try {
@@ -82,7 +84,7 @@ function NewBooking() {
     <>
       <PageHeader eyebrow="Ny booking" title="Opret booking." />
       <form onSubmit={submit} noValidate className="grid max-w-text gap-10">
-        {problem ? <Notice tone="error" title={problem} /> : null}
+        {problem ? <Notice tone="error" title={problem} reveal /> : null}
 
         {me.isOwner ? (
           <label className="grid gap-2">
@@ -107,17 +109,21 @@ function NewBooking() {
           </label>
         ) : null}
 
-        <fieldset className="grid gap-2">
-          <legend className="mb-2 text-sm font-medium text-text">Behandling</legend>
+        <div className="grid gap-2">
+          <label htmlFor="ny-offer" className="mb-2 text-sm font-medium text-text">
+            Behandling
+          </label>
           {staffId && activeOffers.length === 0 && !offers.isPending ? (
             <Notice title="Ingen aktive behandlinger.">
               Opret behandlinger under Mere → Behandlinger.
             </Notice>
           ) : (
             <select
+              id="ny-offer"
               value={offerId ?? ""}
               onChange={(e) => setOfferId(e.target.value || undefined)}
               aria-invalid={errors["offer"] ? true : undefined}
+              aria-describedby={errors["offer"] ? "ny-behandling-fejl" : undefined}
               className="min-h-12 border border-control bg-ink-3 px-4 text-base text-text"
             >
               <option value="">Vælg behandling</option>
@@ -129,23 +135,34 @@ function NewBooking() {
               ))}
             </select>
           )}
-          {errors["offer"] ? <p className="text-sm text-closed">{errors["offer"]}</p> : null}
-        </fieldset>
+          {errors["offer"] ? (
+            <p id="ny-behandling-fejl" className="text-sm text-closed">
+              {errors["offer"]}
+            </p>
+          ) : null}
+        </div>
 
         <section aria-label="Tidspunkt" className="grid gap-2">
-          <h2 className="text-xl leading-7 text-text">Tidspunkt</h2>
+          <h2 id="ny-time" tabIndex={-1} className="text-xl leading-7 text-text">
+            Tidspunkt
+          </h2>
           <StaffSlotPicker
             staffTreatmentId={offer?.id}
             initialDate={initialDate}
             initialTime={start ? localTime(new Date(start)) : undefined}
             onChange={onPicked}
           />
-          {errors["time"] ? <p className="text-sm text-closed">{errors["time"]}</p> : null}
+          {errors["time"] ? (
+            <p role="alert" className="text-sm text-closed">
+              {errors["time"]}
+            </p>
+          ) : null}
         </section>
 
         <section aria-label="Kunde" className="grid gap-6">
           <h2 className="text-xl leading-7 text-text">Kunde</h2>
           <TextField
+            id="ny-name"
             label="Navn"
             autoComplete="off"
             value={customer.name}
@@ -153,6 +170,7 @@ function NewBooking() {
             error={errors["name"]}
           />
           <TextField
+            id="ny-phone"
             label="Telefon"
             type="tel"
             inputMode="tel"
@@ -163,6 +181,7 @@ function NewBooking() {
             error={errors["phone"]}
           />
           <TextField
+            id="ny-email"
             label="Mail"
             optional
             type="email"
@@ -196,7 +215,7 @@ function NewBooking() {
         <div className="pb-safe sticky bottom-16 z-10 -mx-gutter border-t border-line-strong bg-ink/95 px-gutter pt-3 backdrop-blur md:bottom-0">
           <Button
             type="submit"
-            disabled={busy}
+            aria-disabled={busy || undefined}
             aria-busy={busy || undefined}
             className="w-full sm:w-auto"
           >

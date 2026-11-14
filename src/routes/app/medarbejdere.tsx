@@ -5,10 +5,17 @@ import { useState, type FormEvent } from "react";
 import { Button, Monogram, Notice, Spinner, TextField } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
 import { useMe, useStaffList } from "@/lib/staff-data";
+import { inviteStaffSchema } from "@/lib/staff-schemas";
 import { inviteStaffMember, setStaffMemberActive } from "@/lib/staff.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/medarbejdere")({ component: StaffAdmin });
+
+type InviteErrors = {
+  displayName?: string | undefined;
+  email?: string | undefined;
+  phone?: string | undefined;
+};
 
 function StaffAdmin() {
   const me = useMe();
@@ -19,16 +26,32 @@ function StaffAdmin() {
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ tone: "success" | "error"; text: string }>();
+  const [errors, setErrors] = useState<InviteErrors>({});
 
   if (!me.isOwner) return <Notice tone="error" title="Kun ejeren har adgang til medarbejdere." />;
 
   const invite = async (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
-    setBusy(true);
     setMsg(undefined);
+    // Samme schema som serveren, så fejl vises ved feltet i stedet for en generel fejl.
+    const parsed = inviteStaffSchema.safeParse({ displayName: name, email, phone });
+    if (!parsed.success) {
+      const fe = parsed.error.flatten().fieldErrors;
+      const next = {
+        displayName: fe.displayName?.[0],
+        email: fe.email?.[0],
+        phone: fe.phone?.[0] ? "Telefonnummeret er for langt." : undefined,
+      };
+      setErrors(next);
+      const first = (["displayName", "email", "phone"] as const).find((k) => next[k]);
+      if (first) document.getElementById(`invite-${first}`)?.focus();
+      return;
+    }
+    setErrors({});
+    setBusy(true);
     try {
-      const r = await inviteStaffMember({ data: { displayName: name, email, phone } });
+      const r = await inviteStaffMember({ data: parsed.data });
       if (r.ok) {
         setMsg({
           tone: "success",
@@ -65,7 +88,7 @@ function StaffAdmin() {
     <>
       <PageHeader eyebrow="Ejer" title="Medarbejdere." />
       <div className="grid max-w-text gap-10">
-        {msg ? <Notice tone={msg.tone} title={msg.text} live /> : null}
+        {msg ? <Notice tone={msg.tone} title={msg.text} live reveal /> : null}
         {staff.isPending ? (
           <Spinner />
         ) : (
@@ -135,10 +158,20 @@ function StaffAdmin() {
         )}
         <form onSubmit={invite} noValidate className="grid gap-4 border border-line-strong p-4">
           <h2 className="text-xl leading-7 text-text">Invitér medarbejder</h2>
-          <TextField label="Navn" value={name} onChange={(e) => setName(e.target.value)} />
           <TextField
+            id="invite-displayName"
+            label="Navn"
+            autoComplete="off"
+            error={errors.displayName}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <TextField
+            id="invite-email"
             label="Mail"
             type="email"
+            autoComplete="off"
+            error={errors.email}
             autoCapitalize="off"
             spellCheck={false}
             value={email}
@@ -146,15 +179,18 @@ function StaffAdmin() {
           />
           <TextField
             label="Telefon"
+            id="invite-phone"
             type="tel"
             inputMode="tel"
+            autoComplete="off"
+            error={errors.phone}
             optional
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
           <Button
             type="submit"
-            disabled={busy}
+            aria-disabled={busy || undefined}
             aria-busy={busy || undefined}
             className="justify-self-start"
           >

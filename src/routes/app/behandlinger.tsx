@@ -134,7 +134,7 @@ function StaffTreatments({ staffId }: { staffId: string }) {
 
   return (
     <div className="grid max-w-text gap-10">
-      {msg ? <Notice tone={msg.tone} title={msg.text} live /> : null}
+      {msg ? <Notice tone={msg.tone} title={msg.text} live reveal /> : null}
       <p className="text-sm text-text-2">
         Pris og varighed gemmes på hver booking. Ændringer her påvirker kun nye bookinger.
       </p>

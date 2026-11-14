@@ -53,7 +53,7 @@ function FailedMessages() {
           Bookinger er gyldige, selv om en besked fejler. Her ser du mails, WhatsApp-beskeder og
           push, der ikke kom frem efter flere forsøg.
         </p>
-        {msg ? <Notice tone={msg.tone} title={msg.text} live /> : null}
+        {msg ? <Notice tone={msg.tone} title={msg.text} live reveal /> : null}
         {jobs.isPending ? (
           <Spinner />
         ) : (jobs.data ?? []).length === 0 ? (

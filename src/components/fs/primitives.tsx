@@ -6,7 +6,9 @@ import { Link, type LinkProps } from "@tanstack/react-router";
 import { AlertTriangle, Check, Info } from "lucide-react";
 import {
   forwardRef,
+  useEffect,
   useId,
+  useRef,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
@@ -102,6 +104,7 @@ export function Notice({
   actions,
   className,
   live,
+  reveal = false,
 }: {
   tone?: "info" | "error" | "success";
   title: ReactNode;
@@ -109,10 +112,30 @@ export function Notice({
   actions?: ReactNode;
   className?: string;
   live?: boolean;
+  /** Svar på en handling: rul beskeden ind og tag fokus, hvis knappen forsvandt. */
+  reveal?: boolean;
 }) {
   const Icon = tone === "error" ? AlertTriangle : tone === "success" ? Check : Info;
+  const ref = useRef<HTMLDivElement>(null);
+  // Svar på en handling står ofte øverst, mens knappen sidder nederst. Rul beskeden ind,
+  // hvis den ikke er synlig – ellers sker der tilsyneladende ingenting.
+  const revealKey = typeof title === "string" ? title : null;
+  useEffect(() => {
+    const el = ref.current;
+    if (!reveal || !el) return;
+    // Forsvandt knappen (deaktiveret eller fjernet), står fokus på <body>. Sæt det på beskeden,
+    // så tastatur- og skærmlæserbrugere fortsætter derfra.
+    if (!document.activeElement || document.activeElement === document.body)
+      el.focus({ preventScroll: true });
+    const r = el.getBoundingClientRect();
+    if (r.top >= 72 && r.bottom <= window.innerHeight - 96) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "center", behavior: reduce ? "auto" : "smooth" });
+  }, [reveal, revealKey]);
   return (
     <div
+      ref={ref}
+      tabIndex={reveal ? -1 : undefined}
       role={tone === "error" ? "alert" : live ? "status" : undefined}
       className={cn(
         "flex items-start gap-3 border bg-ink-3 p-4",

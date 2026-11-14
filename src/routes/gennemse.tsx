@@ -138,7 +138,7 @@ function Review() {
 
       {problem ? (
         <div className="mt-8 grid gap-6">
-          <Notice tone="error" title={problem.message}>
+          <Notice tone="error" title={problem.message} reveal>
             {problem.alternatives?.length ? "Her er de ledige tider samme dag." : null}
           </Notice>
           {problem.alternatives?.length ? (

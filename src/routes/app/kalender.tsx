@@ -269,7 +269,11 @@ function WeekView({
                         {b.customer_name} · {b.treatment_name}
                         {showStaff && b.staff ? ` · ${b.staff.display_name}` : ""}
                       </span>
-                      {conflicts.has(b.id) ? (
+                      {b.status === "cancelled" ? (
+                        <span className="ml-auto inline-block text-xs uppercase tracking-[0.18em] text-text-muted">
+                          Aflyst
+                        </span>
+                      ) : conflicts.has(b.id) ? (
                         <span className="ml-auto text-xs uppercase tracking-[0.18em] text-closed">
                           Konflikt
                         </span>
