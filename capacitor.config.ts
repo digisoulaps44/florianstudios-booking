@@ -9,13 +9,15 @@ import type { CapacitorConfig } from "@capacitor/cli";
  * og offline-siden, der vises, hvis den udgivne app ikke kan nås.
  *
  * - `appId` kan ikke ændres, når appen først er oprettet i App Store Connect.
- * - Skift til eget domæne (fx booking.florianstudio.dk), før appen sendes til review. Husk at rette
- *   START_URL i capacitor/www/offline.html samtidig – testen i src/test/capacitor-config.test.ts
+ * - Domænet er book.florianstudio.dk (besluttet 15/11). Det skal virke i Lovable (eget domæne +
+ *   DNS) og være sat som PUBLIC_APP_URL, før en build sendes til review. Ændres domænet, skal
+ *   START_URL i capacitor/www/offline.html rettes samtidig – testen i src/test/capacitor-config.test.ts
  *   fanger det, hvis de to ikke matcher.
- * - CAP_SERVER_URL kan pege på en lokal udviklingsserver under test (fx http://192.168.1.20:8080).
+ * - CAP_SERVER_URL kan pege på en lokal udviklingsserver under test (fx http://192.168.1.20:8080)
+ *   eller på https://blank-canvas-preview.lovable.app, indtil book.florianstudio.dk virker.
  *   Den må aldrig sættes i en build, der sendes til TestFlight eller App Store.
  */
-export const PRODUCTION_URL = "https://blank-canvas-preview.lovable.app";
+export const PRODUCTION_URL = "https://book.florianstudio.dk";
 
 const serverUrl = process.env["CAP_SERVER_URL"] ?? PRODUCTION_URL;
 

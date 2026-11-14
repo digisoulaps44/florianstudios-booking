@@ -7,7 +7,7 @@ Opdateret: 14. november 2026. Arbejdet ligger på branchen `app-store`. `main` s
 - **Én app, "Florian Studios"**, med både kundens booking og medarbejderappen. Kundens booking er forsiden, og medarbejderlogin ligger diskret i menuen.
 - **Capacitor 8** pakker webappen ind i en iOS-app. WebView'et indlæser den udgivne app (`server.url`), fordi appen er SSR med serverfunktioner. En lokal offline-side ligger i selve appen.
 - **Den vigtigste native værdi er push via APNs til medarbejderne.** Dertil kommer Føj til kalender, Apple Kort, opkald til salonen, haptik, universal links og Face ID-lås.
-- **Appen skal udgives under Florian Studios' egen Apple Developer-konto**, ikke under udviklerens. Udvikleren tilføjes som teammedlem (se afsnit 6).
+- **Appen udgives under DigiSoul Business' Apple Developer-konto** (besluttet 15/11: Florian Studios skal ikke betale ca. 800 kr. om året for egen konto). Det giver en kendt risiko for afvisning under 4.2.6/5.2.1. Tiltag og plan B står i afsnit 6.
 - **Status på branchen:** Capacitor-pakker, `capacitor.config.ts`, lokal offline-side og en test er tilføjet. Xcode-projektet er genereret og bygget som test, men ikke committet (se fase 4). Der er ikke ændret noget i databasen, og intet er udgivet eller sendt til Apple.
 
 ## Beslutninger truffet nu (konservativt)
@@ -15,10 +15,10 @@ Opdateret: 14. november 2026. Arbejdet ligger på branchen `app-store`. `main` s
 | #   | Beslutning         | Valg                                                                 | Hvorfor                                                                                                        |
 | --- | ------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | 1   | Hvilken app        | Begge dele i én app                                                  | Én app at vedligeholde og få godkendt. Kundedelen alene er svær at forsvare under 4.2.                         |
-| 2   | Udgiver            | Florian Studios' egen konto                                          | Guideline 4.2.6 og 5.2.1 (afsnit 6).                                                                           |
+| 2   | Udgiver            | DigiSoul Business (besluttet 15/11)                                  | Pris. Risiko under 4.2.6/5.2.1 afbødes med skriftlig tilladelse og review-noter; plan B i afsnit 6.            |
 | 3   | Bundle ID          | `dk.florianstudio.app`                                               | Omvendt domæne for florianstudio.dk. **Kan ikke ændres**, når appen er oprettet i App Store Connect.           |
 | 4   | Indlæsning         | `server.url` (udgivet app) + lokal offline-side                      | Appen kan ikke bundtes statisk uden en stor ombygning (afsnit 3). Plan B er beskrevet.                         |
-| 5   | Domæne             | Eget domæne før review, fx `booking.florianstudio.dk`                | Universal links og AASA-fil kræver et domæne, vi ejer. `blank-canvas-preview.lovable.app` bruges kun til test. |
+| 5   | Domæne             | `book.florianstudio.dk` (besluttet 15/11), sat op før review         | Universal links og AASA-fil kræver et domæne, vi ejer. `blank-canvas-preview.lovable.app` bruges kun til test. |
 | 6   | Push-vej           | APNs direkte fra serveren, ellers via en Lovable Cloud edge function | Ingen ny databehandler. Firebase (Google) kun som sidste udvej (afsnit 2).                                     |
 | 7   | Capacitor-version  | Præcis `8.6.0` (ikke `^`)                                            | Udgivet 28/10 2026, over to uger gammel. 8.6.1/8.6.2 er to dage gamle, og 9.0 er kun release candidate.        |
 | 8   | Enheder            | Kun iPhone (`TARGETED_DEVICE_FAMILY = 1`)                            | Undgår krav om iPad-skærmbilleder og iPad-layout. Indstilles i fase 4.                                         |
@@ -27,12 +27,9 @@ Opdateret: 14. november 2026. Arbejdet ligger på branchen `app-store`. `main` s
 
 ## Beslutninger, I skal træffe
 
-1. **Selskabsform og Apple-konto.** Er Florian Studios et ApS (selskab) eller en enkeltmandsvirksomhed?
-   - **ApS:** Florian tilmelder virksomheden som _organisation_ med et D-U-N-S-nummer (gratis, kan tage op til et par uger). Sælgernavnet i App Store bliver selskabets juridiske navn.
-   - **Enkeltmandsvirksomhed:** Apple tager imod den som _individuel_ konto i Florians navn, og sælgernavnet bliver "Florian Iseni". Apple accepterer ikke binavne.
-   - Det koster 99 USD om året. Florian betaler og ejer kontoen.
-2. **Adgang for udvikleren.** Florian inviterer udvikleren som _Admin_ i App Store Connect og i udviklerkontoen. Så kan udvikleren oprette Bundle ID, APNs-nøgle og builds i Florians team.
-3. **Domæne.** Godkend `booking.florianstudio.dk` eller et andet underdomæne. Det sættes op som eget domæne i Lovable med en DNS-post hos domæneudbyderen.
+1. **Apple-konto: DigiSoul Business (besluttet).** Appen oprettes, bygges og indsendes fra DigiSouls team. Sælgernavnet i App Store bliver DigiSouls juridiske navn. Florian Studios betaler ikke for en konto.
+2. **Skriftlig tilladelse fra Florian Studios.** Før indsendelse underskriver Florian Studios en kort erklæring om, at DigiSoul må udgive appen med Florian Studios' navn, logo og indhold (krævet under 5.2.1). Den gemmes og nævnes i App Review-noterne.
+3. **Domæne.** `book.florianstudio.dk` er valgt. Det sættes op som eget domæne i Lovable med de DNS-poster, Lovable viser. Når det virker med https, sættes secret'en `PUBLIC_APP_URL=https://book.florianstudio.dk` (links i mails, push og invitationer), og appen udgives igen. Først derefter bygges appen til TestFlight/App Store – adressen er bygget ind i appen, og et senere domæneskift kræver en ny app-version og et nyt review.
 4. **Navn i App Store.** Forslag: "Florian Studios" (højst 30 tegn) med undertitlen "Book tid i Herlev". Navnet skal være ledigt i App Store.
 5. **Privatlivspolitik.** Branchen `feat/privacy-gdpr` skal merges og udgives, og de markerede værdier skal bekræftes. Afsnittet om appen i afsnit 5 skal også tilføjes.
 6. **App Review.** Godkend en demokonto til Apples reviewer (afsnit 5). Godkend også, at reviewer kan komme til at lave en rigtig booking i reviewperioden. Florian får besked og aflyser den.
@@ -119,7 +116,7 @@ grant all on table public.native_push_tokens to service_role;
 | 403 `InvalidProviderToken`/`ExpiredProviderToken`, manglende secrets | Opsætningsfejl. Leveres intet andet, kastes `ChannelNotConfigured`, så jobbet venter uden at bruge forsøg. |
 | 429, 5xx, netværksfejl                                               | Midlertidig fejl. Almindelig backoff, som i dag.                                                           |
 
-- **Secrets (Lovable → Secrets):** `APNS_KEY_ID`, `APNS_TEAM_ID` og `APNS_PRIVATE_KEY` (indholdet af `.p8`-filen). Nøglen oprettes i Florians team. Mangler de, kører web push videre, og APNs-delen venter.
+- **Secrets (Lovable → Secrets):** `APNS_KEY_ID`, `APNS_TEAM_ID` og `APNS_PRIVATE_KEY` (indholdet af `.p8`-filen). Nøglen oprettes i DigiSouls team. Mangler de, kører web push videre, og APNs-delen venter.
 - **Sandbox og produktion:** Builds fra Xcode bruger sandbox. TestFlight og App Store bruger produktion. Appen sender miljøet med, når tokenet gemmes, og serveren vælger host derefter.
 - **Logud og deaktivering:** Ved logud slettes enhedens token. Når ejeren deaktiverer en medarbejder, slettes vedkommendes tokens.
 - **Tests:** JWT-signatur (verificeres med den offentlige nøgle), payload, fejlmapping og blandet levering (web og APNs) i samme job.
@@ -169,28 +166,35 @@ grant all on table public.native_push_tokens to service_role;
 - **Review-noter (forslag):** Kundedelen laver rigtige bookinger i en rigtig salon, så reviewer bedes aflyse via linket i kvitteringen. Medarbejderdelen åbnes via menuen → Medarbejderlogin. Push, Føj til kalender og Face ID beskrives med en kort skærmoptagelse.
 - **Aldersgrænse:** 4+. Kategori: Livsstil.
 
-## 6. Konto og ejerskab – skal Florian Studios selv udgive?
+## 6. Konto og ejerskab
 
-**Ja, appen bør udgives under Florian Studios' egen konto.** Begrundelse:
+**Besluttet 15/11: appen udgives under DigiSoul Business' konto** af hensyn til prisen for Florian Studios. Apples regler peger mod, at virksomheden selv udgiver, så valget har en reel risiko for afvisning:
 
 - **4.2.6:** Apps lavet fra skabeloner eller med en app-generator afvises, medmindre de indsendes direkte af den, der leverer appens indhold. Sådanne tjenester må ikke indsende apps for deres kunder. Appen er bygget med Lovable (en app-generator) af et bureau for en kunde, hvilket er netop det tilfælde.
 - **5.2.1:** Apps skal indsendes af den person eller juridiske enhed, der ejer eller har licens til det immaterielle indhold. Navn, logo og indhold tilhører Florian Studios.
 - **5.1.1(ix)** (kræver juridisk enhed i stærkt regulerede brancher som bank og sundhed) gælder ikke en frisør.
-- I praksis afviser Apple ofte apps for en navngiven virksomhed, når sælgeren er en anden. En app kan flyttes mellem konti senere, men Bundle ID, APNs-nøgle og TestFlight-historik er knyttet til teamet. Det er derfor nemmest at starte i Florians team fra dag ét.
+- I praksis afviser Apple ofte apps for en navngiven virksomhed, når sælgeren er en anden. En app kan flyttes mellem konti senere, men Bundle ID, APNs-nøgle og TestFlight-historik er knyttet til teamet. Det taler for at starte i Florians team – men af hensyn til prisen starter appen i DigiSouls team (se ovenfor).
 
-**Sådan:** Florian tilmelder sig (afsnit "Beslutninger, I skal træffe", punkt 1) og inviterer udvikleren som Admin. Udvikleren registrerer `dk.florianstudio.app` med Push Notifications og Associated Domains, opretter APNs-nøglen og bygger og indsender fra Florians team. Udviklerens egen konto bruges ikke til denne app, heller ikke til TestFlight.
+**Sådan mindskes risikoen:**
+
+- `dk.florianstudio.app` registreres i DigiSouls team med Push Notifications og Associated Domains; APNs-nøglen oprettes dér.
+- Skriftlig tilladelse fra Florian Studios til navn, logo og indhold (5.2.1) – nævnes i App Review-noterne og kan sendes til Apple på forespørgsel.
+- Review-noterne forklarer, at appen er udviklet specifikt til Florian Studios på opdrag og med tilladelse, og at DigiSoul drifter den for salonen.
+- Appen må ikke ligne en skabelon: eget navn, egne farver/fonte, eget indhold – og DigiSoul indsender ikke næsten ens apps for andre saloner fra samme kode (det er netop det, 4.2.6 rammer).
+
+**Plan B ved afvisning under 4.2.6/5.2.1:** Florian Studios opretter en egen konto, og appen flyttes dertil med App Transfer (muligt, når appen er udgivet mindst én gang og begge konti er i orden) eller oprettes på ny med et nyt Bundle ID, hvis den ikke er udgivet endnu.
 
 ## 7. Faser
 
-| Fase                     | Indhold                                                                                                                                                                                                                                                                                                                                                         | Hvem               | Status                    |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------- |
-| 0. Fundament             | `@capacitor/core`, `@capacitor/ios` og `@capacitor/cli` (8.6.0, bun.lock), `capacitor.config.ts`, `capacitor/www` (startside, offline-side, fonte), `cap:sync`/`cap:open`-scripts, test i `src/test/capacitor-config.test.ts`. `npx cap add ios` og simulator-build er afprøvet.                                                                                | Claude             | **Færdig på `app-store`** |
-| 1. Konto og domæne       | Apple-tilmelding, team-invitation, D-U-N-S ved ApS, eget domæne i Lovable, privatlivspolitik merget.                                                                                                                                                                                                                                                            | Ejer + udvikler    | Afventer                  |
-| 2. Native lag i webappen | `src/lib/native.ts` (`isNativeApp()`, haptik, statusbjælke, splash, tastatur, eksterne links). Native gren i `push.ts`, ingen service worker i appen, kalender-plugin, skjul PWA-vejledning, diskret medarbejderlogin i menuen. Alt bag `Capacitor.isNativePlatform()`, så web er uændret.                                                                      | Claude             | Ikke startet              |
-| 3. APNs på serveren      | HTTP/2-spike, `apns.ts`, udvidet `sendPushToStaff`, tests. Tabellen `native_push_tokens` og APNs-secrets via Lovable.                                                                                                                                                                                                                                           | Claude + Lovable   | Ikke startet              |
-| 4. Xcode-projekt         | Commit `ios/` (genereres med `npx cap add ios`). Capabilities: Push Notifications, Associated Domains (`applinks:<domæne>`), Background Modes → Remote notifications er ikke nødvendig. `Info.plist`: kalender- og Face ID-tekster på dansk, `ITSAppUsesNonExemptEncryption`. `PrivacyInfo.xcprivacy`, kun iPhone, ikoner og splash, signering i Florians team. | Claude + udvikler  | Ikke startet              |
-| 5. TestFlight            | Intern test på rigtige iPhones (tjekliste nedenfor).                                                                                                                                                                                                                                                                                                            | Udvikler + Florian | Ikke startet              |
-| 6. Indsendelse           | Metadata, skærmbilleder, App Privacy, review-noter og demokonto. Indsendes af udvikler eller Florian, ikke af Claude.                                                                                                                                                                                                                                           | Udvikler + Florian | Ikke startet              |
+| Fase                     | Indhold                                                                                                                                                                                                                                                                                                                                                          | Hvem               | Status                    |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ------------------------- |
+| 0. Fundament             | `@capacitor/core`, `@capacitor/ios` og `@capacitor/cli` (8.6.0, bun.lock), `capacitor.config.ts`, `capacitor/www` (startside, offline-side, fonte), `cap:sync`/`cap:open`-scripts, test i `src/test/capacitor-config.test.ts`. `npx cap add ios` og simulator-build er afprøvet.                                                                                 | Claude             | **Færdig på `app-store`** |
+| 1. Konto og domæne       | Apple-tilmelding, team-invitation, D-U-N-S ved ApS, eget domæne i Lovable, privatlivspolitik merget.                                                                                                                                                                                                                                                             | Ejer + udvikler    | Afventer                  |
+| 2. Native lag i webappen | `src/lib/native.ts` (`isNativeApp()`, haptik, statusbjælke, splash, tastatur, eksterne links). Native gren i `push.ts`, ingen service worker i appen, kalender-plugin, skjul PWA-vejledning, diskret medarbejderlogin i menuen. Alt bag `Capacitor.isNativePlatform()`, så web er uændret.                                                                       | Claude             | Ikke startet              |
+| 3. APNs på serveren      | HTTP/2-spike, `apns.ts`, udvidet `sendPushToStaff`, tests. Tabellen `native_push_tokens` og APNs-secrets via Lovable.                                                                                                                                                                                                                                            | Claude + Lovable   | Ikke startet              |
+| 4. Xcode-projekt         | Commit `ios/` (genereres med `npx cap add ios`). Capabilities: Push Notifications, Associated Domains (`applinks:<domæne>`), Background Modes → Remote notifications er ikke nødvendig. `Info.plist`: kalender- og Face ID-tekster på dansk, `ITSAppUsesNonExemptEncryption`. `PrivacyInfo.xcprivacy`, kun iPhone, ikoner og splash, signering i DigiSouls team. | Claude + udvikler  | Ikke startet              |
+| 5. TestFlight            | Intern test på rigtige iPhones (tjekliste nedenfor).                                                                                                                                                                                                                                                                                                             | Udvikler + Florian | Ikke startet              |
+| 6. Indsendelse           | Metadata, skærmbilleder, App Privacy, review-noter og demokonto. Indsendes af udvikler eller Florian, ikke af Claude.                                                                                                                                                                                                                                            | Udvikler + Florian | Ikke startet              |
 
 **Fra `app-store` til `main`:** Når fase 2 og 3 er klar, laves en pull request mod `main`. Lovable bygger og udgiver webdelen som normalt. Mappen `capacitor/` og `capacitor.config.ts` påvirker ikke Lovables build. `ios/` kan ligge på `main` eller blive på `app-store`. Det besluttes ved fase 4.
 
@@ -210,15 +214,15 @@ grant all on table public.native_push_tokens to service_role;
 
 ## 9. Risici
 
-| Risiko                                                     | Sandsynlighed             | Afbødning                                                                         |
-| ---------------------------------------------------------- | ------------------------- | --------------------------------------------------------------------------------- |
-| Afvisning under 4.2 (for meget hjemmeside)                 | Mellem                    | Native funktioner synlige for reviewer, demokonto, video. Plan B: statisk klient. |
-| Afvisning under 4.2.6/5.2.1 (forkert udgiver)              | Høj ved udviklerens konto | Udgiv under Florian Studios' konto.                                               |
-| APNs virker ikke fra Workers (HTTP/2)                      | Ukendt                    | Spike først, derefter edge function, sidst FCM.                                   |
-| `server.url` er ikke officielt til produktion              | Lav–mellem                | Pinnet Capacitor-version, test ved hver opgradering, offline-side.                |
-| JS- og native-pluginversioner kommer ud af trit            | Mellem                    | Præcise versioner, `isPluginAvailable()`, ny app-version ved pluginopgradering.   |
-| Reviewer laver rigtige bookinger                           | Høj                       | Review-noter, Florian varslet, aflysning via link.                                |
-| Krav om Xcode 26 / iOS 26 SDK til upload (siden 28/4 2026) | –                         | Xcode 27 er installeret. Capacitor 8 kræver Xcode 26+.                            |
+| Risiko                                                     | Sandsynlighed         | Afbødning                                                                         |
+| ---------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------- |
+| Afvisning under 4.2 (for meget hjemmeside)                 | Mellem                | Native funktioner synlige for reviewer, demokonto, video. Plan B: statisk klient. |
+| Afvisning under 4.2.6/5.2.1 (forkert udgiver)              | Mellem–høj (DigiSoul) | Skriftlig tilladelse, review-noter, ingen skabelonpræg. Plan B: Florians konto.   |
+| APNs virker ikke fra Workers (HTTP/2)                      | Ukendt                | Spike først, derefter edge function, sidst FCM.                                   |
+| `server.url` er ikke officielt til produktion              | Lav–mellem            | Pinnet Capacitor-version, test ved hver opgradering, offline-side.                |
+| JS- og native-pluginversioner kommer ud af trit            | Mellem                | Præcise versioner, `isPluginAvailable()`, ny app-version ved pluginopgradering.   |
+| Reviewer laver rigtige bookinger                           | Høj                   | Review-noter, Florian varslet, aflysning via link.                                |
+| Krav om Xcode 26 / iOS 26 SDK til upload (siden 28/4 2026) | –                     | Xcode 27 er installeret. Capacitor 8 kræver Xcode 26+.                            |
 
 ## Kilder
 
