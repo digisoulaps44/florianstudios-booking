@@ -36,6 +36,13 @@
       "when": 1794677248039,
       "tag": "0004_gdpr_customer_search_and_anonymization",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794678032448,
+      "tag": "0005_staff_photos_authenticated_select",
+      "breakpoints": true
     }
   ]
 }
