@@ -64,6 +64,7 @@ const kr = (ore: number) => (ore / 100).toString().replace(".", ",");
 const ore = (kr: string) => Math.round(Number(kr.replace(",", ".")) * 100);
 
 function StaffTreatments({ staffId }: { staffId: string }) {
+  const me = useMe();
   const qc = useQueryClient();
   const offers = useStaffTreatments(staffId);
   const catalog = useTreatments();
@@ -152,6 +153,7 @@ function StaffTreatments({ staffId }: { staffId: string }) {
               key={o.id}
               offer={o}
               first={i === 0}
+              canRename={me.isOwner}
               onSaved={invalidate}
               onError={(t) => setMsg({ tone: "error", text: t })}
             />
@@ -203,15 +205,21 @@ function StaffTreatments({ staffId }: { staffId: string }) {
 function OfferRow({
   offer,
   first,
+  canRename,
   onSaved,
   onError,
 }: {
   offer: StaffTreatmentRow;
   first: boolean;
+  canRename: boolean;
   onSaved: () => void;
   onError: (t: string) => void;
 }) {
+  const qc = useQueryClient();
   const [edit, setEdit] = useState(false);
+  const [renaming, setRenaming] = useState(false);
+  const [newName, setNewName] = useState(offer.treatment?.name ?? "");
+  const [renameError, setRenameError] = useState<string>();
   const [price, setPrice] = useState(kr(offer.price_ore));
   const [duration, setDuration] = useState(String(offer.duration_minutes));
   const [buffer, setBuffer] = useState(String(offer.buffer_minutes));
@@ -234,6 +242,36 @@ function OfferRow({
     return true;
   };
   const name = offer.treatment?.name ?? "Behandlingen";
+  // Ejeren omdøber katalognavnet – det gælder alle medarbejdere. Eksisterende bookinger
+  // beholder navnet, de blev booket med.
+  const rename = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed || trimmed.length > 80) {
+      setRenameError("Skriv et navn på højst 80 tegn.");
+      return;
+    }
+    if (trimmed === name) {
+      setRenaming(false);
+      return;
+    }
+    const { error } = await supabase
+      .from("treatments")
+      .update({ name: trimmed })
+      .eq("id", offer.treatment_id);
+    if (error) {
+      setRenameError(
+        error.code === "23505" ? "Der findes allerede en behandling med det navn." : error.message,
+      );
+      return;
+    }
+    setRenameError(undefined);
+    setRenaming(false);
+    notifySuccess(`Omdøbt til ${trimmed}`, {
+      description: "Gælder alle medarbejdere. Tidligere bookinger beholder det gamle navn.",
+    });
+    await qc.invalidateQueries({ queryKey: ["treatments"] });
+    onSaved();
+  };
   const toggleActive = async (active: boolean, undoable = true) => {
     if (!(await save({ active }))) return;
     notifySuccess(active ? `${name} kan bookes igen` : `${name} er skjult for kunder`, {
@@ -265,7 +303,27 @@ function OfferRow({
         {offer.buffer_minutes ? ` + ${offer.buffer_minutes} min buffer` : ""} ·{" "}
         {offer.active ? "Kan bookes" : "Skjult for kunder"}
       </p>
-      {edit ? (
+      {renaming ? (
+        <div className="grid gap-4">
+          <TextField
+            label="Nyt navn"
+            autoFocus
+            maxLength={80}
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            error={renameError}
+            hint="Navnet ændres for alle medarbejdere, der tilbyder behandlingen."
+          />
+          <div className="flex flex-wrap gap-x-6">
+            <Button size="sm" onClick={() => void rename()}>
+              Gem navn
+            </Button>
+            <Button variant="ghost" onClick={() => setRenaming(false)}>
+              Annullér
+            </Button>
+          </div>
+        </div>
+      ) : edit ? (
         <div className="grid gap-4 sm:grid-cols-3">
           <TextField
             label="Pris (kr.)"
@@ -312,6 +370,18 @@ function OfferRow({
           <Button variant="ghost" onClick={() => setEdit(true)}>
             Ret pris og tid
           </Button>
+          {canRename ? (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setNewName(name);
+                setRenameError(undefined);
+                setRenaming(true);
+              }}
+            >
+              Omdøb
+            </Button>
+          ) : null}
           <Button variant="ghost" onClick={() => void toggleActive(!offer.active)}>
             {offer.active ? "Skjul for kunder" : "Gør bookbar"}
           </Button>

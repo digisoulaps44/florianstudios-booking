@@ -11,6 +11,7 @@ import {
   Notice,
   Spinner,
   StatusBadge,
+  TextField,
   buttonClasses,
   type BookingStatus,
 } from "@/components/fs/primitives";
@@ -24,7 +25,9 @@ import {
   cancelStaffBooking,
   rescheduleStaffBooking,
   setBookingStatus,
+  updateBookingCustomer,
 } from "@/lib/staff.functions";
+import { staffUpdateCustomerSchema } from "@/lib/staff-schemas";
 import { localDate, localTime } from "@/lib/tz";
 
 export const Route = createFileRoute("/app/booking/$id")({
@@ -46,6 +49,7 @@ const EVENT_LABEL: Record<string, string> = {
   rescheduled: "Flyttet",
   cancelled: "Aflyst",
   status_changed: "Status ændret",
+  details_changed: "Kundeoplysninger rettet",
 };
 const ACTOR_LABEL: Record<string, string> = {
   customer: "kunden",
@@ -98,7 +102,7 @@ function BookingDetail() {
   const me = useMe();
   const qc = useQueryClient();
   const q = useBooking(id);
-  const [mode, setMode] = useState<"view" | "move" | "cancel">("view");
+  const [mode, setMode] = useState<"view" | "move" | "cancel" | "edit">("view");
   const [picked, setPicked] = useState<PickedTime>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ tone: "success" | "error"; text: string }>();
@@ -277,6 +281,9 @@ function BookingDetail() {
               <Button variant="ghost" onClick={() => setMode("move")}>
                 Flyt tid
               </Button>
+              <Button variant="ghost" onClick={() => setMode("edit")}>
+                Ret kunde
+              </Button>
               <Button variant="ghost" onClick={() => setMode("cancel")}>
                 Aflys booking
               </Button>
@@ -337,6 +344,17 @@ function BookingDetail() {
               </Button>
             </div>
           </section>
+        ) : null}
+
+        {mode === "edit" ? (
+          <EditCustomer
+            booking={b}
+            busy={busy}
+            onCancel={() => setMode("view")}
+            onSave={(data) =>
+              run(() => updateBookingCustomer({ data }), "Kundeoplysningerne er gemt.")
+            }
+          />
         ) : null}
 
         {mode === "cancel" ? (
@@ -404,5 +422,118 @@ function BookingDetail() {
         ) : null}
       </div>
     </>
+  );
+}
+
+type EditableBooking = {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  note: string | null;
+};
+type CustomerPatch = {
+  bookingId: string;
+  name: string;
+  phone: string;
+  email: string;
+  note: string;
+};
+
+/** Ret kundens oplysninger. Samme validering og telefon-normalisering som serveren. */
+function EditCustomer({
+  booking,
+  busy,
+  onSave,
+  onCancel,
+}: {
+  booking: EditableBooking;
+  busy: boolean;
+  onSave: (data: CustomerPatch) => void;
+  onCancel: () => void;
+}) {
+  const [form, setForm] = useState({
+    name: booking.customer_name,
+    phone: formatPhone(booking.customer_phone),
+    email: booking.customer_email ?? "",
+    note: booking.note ?? "",
+  });
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof form, string>>>({});
+  const set = (k: keyof typeof form) => (e: { target: { value: string } }) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const parsed = staffUpdateCustomerSchema.safeParse({ bookingId: booking.id, ...form });
+    if (!parsed.success) {
+      const next: typeof errors = {};
+      for (const issue of parsed.error.issues) {
+        const k = issue.path[0] as keyof typeof form;
+        next[k] ??= issue.message;
+      }
+      setErrors(next);
+      const first = (["name", "phone", "email", "note"] as const).find((k) => next[k]);
+      if (first) document.getElementById(`edit-${first}`)?.focus();
+      return;
+    }
+    setErrors({});
+    onSave({ bookingId: booking.id, ...form });
+  };
+
+  return (
+    <section aria-label="Ret kunde" className="rise-in grid gap-6 border-t border-line pt-8">
+      <h2 ref={focusOnMount} tabIndex={-1} className="text-2xl leading-8 text-text">
+        Ret kunde.
+      </h2>
+      <form noValidate onSubmit={submit} className="grid gap-4">
+        <TextField
+          id="edit-name"
+          label="Navn"
+          autoComplete="off"
+          value={form.name}
+          onChange={set("name")}
+          error={errors.name}
+        />
+        <TextField
+          id="edit-phone"
+          label="Mobil"
+          type="tel"
+          inputMode="tel"
+          autoComplete="off"
+          value={form.phone}
+          onChange={set("phone")}
+          error={errors.phone}
+        />
+        <TextField
+          id="edit-email"
+          label="Mail"
+          type="email"
+          inputMode="email"
+          autoComplete="off"
+          optional
+          value={form.email}
+          onChange={set("email")}
+          error={errors.email}
+        />
+        <TextField
+          id="edit-note"
+          label="Note"
+          optional
+          maxLength={500}
+          value={form.note}
+          onChange={set("note")}
+          error={errors.note}
+        />
+        <p className="text-sm text-text-2">Kunden får ikke besked om rettelsen.</p>
+        <div className="flex flex-wrap gap-x-6 gap-y-3">
+          <Button type="submit" loading={busy}>
+            {busy ? "Gemmer …" : "Gem"}
+          </Button>
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            Annullér
+          </Button>
+        </div>
+      </form>
+    </section>
   );
 }

@@ -60,6 +60,16 @@ export const setStaffActiveSchema = z.object({ staffId: uuid, active: z.boolean(
 
 export const retryMessageSchema = z.object({ jobId: uuid });
 
+export const dismissMessageSchema = z.object({ jobId: uuid });
+
+export const staffUpdateCustomerSchema = z.object({
+  bookingId: uuid,
+  name: staffCustomerSchema.shape.name,
+  phone,
+  email: staffCustomerSchema.shape.email,
+  note: z.string().trim().max(500).default(""),
+});
+
 export const staffSlotsSchema = z.object({
   staffTreatmentId: uuid,
   date: z.string(),

@@ -23,7 +23,8 @@ Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 - Egne ugentlige arbejdstider, pauser, ferie, fravær, blokeringer og ekstra tider. Ændringer flytter aldrig bookinger – konflikter vises.
 - Egne behandlinger, priser, varigheder og buffer.
 - Notifikationscenter med læst/ulæst (virker uden push). Mail-/push-valg pr. medarbejder; ejeren kan tilvælge alle bookinger.
-- Ejer: invitér/deaktivér medarbejdere, salonindstillinger (frist, påmindelse, bookingvindue, interval, varsel), fejlede beskeder med "Send igen".
+- Ejer: invitér/deaktivér medarbejdere, salonindstillinger (frist, påmindelse, bookingvindue, interval, varsel), fejlede beskeder med "Send igen" og "Afvis" (status `cancelled`, slettes ikke).
+- Ret kundens navn, mobil, mail og note på bookingen (samme validering og telefon-normalisering som bookingflowet; historikpost `details_changed` med feltnavne, ikke værdier). Ejeren kan omdøbe behandlinger (katalognavn, gælder alle; gamle bookinger beholder navnet). Notifikationer: "Ryd læste" og slet enkelt (hard-delete af egne, migration `0003_notification_delete_and_details_changed_event`).
 
 **Beskeder**
 - Vedvarende kø (`message_jobs`) + arbejder (`/api/public/cron/messages`) med låsning (`SKIP LOCKED`), idempotens, eksponentiel backoff, permanente fejl og "afventer opsætning".
@@ -42,7 +43,7 @@ Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 
 - **Oplevelsesløft (14/11, commit `2ffcda1`):** efter skills success-states, ui-motion, data-tables, mobile-touch, Emil Kowalskis apple-design/mobile-native/Sonner og Liquid Glass (CSS-efterligning på svævende bjælker, radius 0 bevaret). Live på mobil (375 og 320 px, ingen vandret scroll): tryk-feedback og intet tap-blink, glasbjælker, trinlinje der fyldes, kaskade på tider (35 ms, højst 12 trin), felter der ryster ved fejl med fokus på første, spinner i "Bekræft booking", kvittering med tegnet flueben, "Vis vej" og påmindelsestekst kun når påmindelsen sendes. Medarbejderdelen (toasts med Fortryd, kvittering efter "Opret booking", glidende fanemarkering, klokke) er bygget men ikke set live endnu – kræver login i testbrowseren.
 
-**Ikke testet endnu:** invitation af en rigtig medarbejder og rolleadgang med flere brugere (medarbejder A må ikke se B's bookinger), push på rigtige enheder, mail og WhatsApp (afventer opsætning).
+**Ikke testet endnu:** ret kunde, omdøb behandling, ryd/slet notifikationer og afvis besked (kun typecheck/lint/unit-tests – ikke set live); invitation af en rigtig medarbejder og rolleadgang med flere brugere (medarbejder A må ikke se B's bookinger), push på rigtige enheder, mail og WhatsApp (afventer opsætning).
 
 ## Afventer ekstern opsætning
 

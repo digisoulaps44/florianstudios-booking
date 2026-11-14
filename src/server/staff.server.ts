@@ -11,6 +11,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import type { Database } from "@/integrations/supabase/types";
 import { localDate } from "@/lib/tz";
 import type {
+  dismissMessageSchema,
   inviteStaffSchema,
   retryMessageSchema,
   setStaffActiveSchema,
@@ -18,6 +19,7 @@ import type {
   staffCreateBookingSchema,
   staffRescheduleSchema,
   staffSetStatusSchema,
+  staffUpdateCustomerSchema,
 } from "@/lib/staff-schemas";
 
 import { loadBookableStaffTreatment, loadSettings, slotsForDays } from "./availability.server";
@@ -200,6 +202,45 @@ export async function staffSetStatus(ctx: Ctx, input: z.output<typeof staffSetSt
   return { ok: true as const };
 }
 
+/** Ret kundens navn, telefon, mail og note. Historikken får en post med de ændrede felter. */
+export async function staffUpdateCustomer(
+  ctx: Ctx,
+  input: z.output<typeof staffUpdateCustomerSchema>,
+) {
+  const a = await actorFor(ctx);
+  if (!a) return fail("not_found", "Du har ikke adgang.");
+  const b = await visibleBooking(ctx, input.bookingId);
+  if (!b) return fail("not_found", "Bookingen findes ikke.");
+  const { data: cur, error: readError } = await supabaseAdmin
+    .from("bookings")
+    .select("customer_name, customer_phone, customer_email, note")
+    .eq("id", b.id)
+    .single();
+  if (readError) throw new Error(readError.message);
+  const next = {
+    customer_name: input.name,
+    customer_phone: input.phone,
+    customer_email: input.email || null,
+    note: input.note || null,
+  };
+  const changed = (Object.keys(next) as (keyof typeof next)[]).filter(
+    (k) => (cur[k] ?? null) !== next[k],
+  );
+  if (changed.length === 0) return { ok: true as const, changed: 0 };
+  const { error } = await supabaseAdmin.from("bookings").update(next).eq("id", b.id);
+  if (error) throw new Error(error.message);
+  // Historik: kun feltnavne, ikke værdier (persondata hører ikke hjemme i loggen).
+  const { error: evError } = await supabaseAdmin.from("booking_events").insert({
+    booking_id: b.id,
+    event: "details_changed",
+    actor: a.actor,
+    actor_user_id: ctx.userId,
+    data: { fields: changed },
+  });
+  if (evError) console.error("booking_events details_changed:", evError.message);
+  return { ok: true as const, changed: changed.length };
+}
+
 // ── Ejer ─────────────────────────────────────────────────────────────────
 async function requireOwner(ctx: Ctx): Promise<Me | null> {
   const me = await whoAmI(ctx);
@@ -273,6 +314,25 @@ export async function retryMessage(ctx: Ctx, input: z.output<typeof retryMessage
       last_error: null,
       failed_at: null,
     })
+    .eq("id", job.id)
+    .eq("status", "failed");
+  if (error) throw new Error(error.message);
+  return { ok: true as const };
+}
+
+/** Ejeren afviser en fejlet besked: den annulleres (slettes ikke) og forsvinder fra listen. */
+export async function dismissMessage(ctx: Ctx, input: z.output<typeof dismissMessageSchema>) {
+  if (!(await requireOwner(ctx))) return fail("not_found", "Kun ejeren kan afvise beskeder.");
+  const { data: job } = await ctx.supabase
+    .from("message_jobs")
+    .select("id, status")
+    .eq("id", input.jobId)
+    .maybeSingle();
+  if (!job) return fail("not_found", "Beskeden findes ikke.");
+  if (job.status !== "failed") return fail("invalid", "Kun fejlede beskeder kan afvises.");
+  const { error } = await supabaseAdmin
+    .from("message_jobs")
+    .update({ status: "cancelled" })
     .eq("id", job.id)
     .eq("status", "failed");
   if (error) throw new Error(error.message);
