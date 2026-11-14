@@ -23,7 +23,8 @@ export const Route = createFileRoute("/api/public/kalender/$token")({
         const { getCalendarBooking } = await import("@/server/public-booking.server");
         const b = await getCalendarBooking(parsed.data.token);
         if (!b) return notFound();
-        const origin = new URL(request.url).origin;
+        const { publicOrigin } = await import("@/server/public-url");
+        const origin = publicOrigin(new URL(request.url).origin);
         const start = new Date(b.startsAt);
         const end = new Date(start.getTime() + b.durationMinutes * 60_000);
         const manage = `${origin}/booking/${parsed.data.token}`;

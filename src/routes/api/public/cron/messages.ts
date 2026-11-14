@@ -13,7 +13,9 @@ export const Route = createFileRoute("/api/public/cron/messages")({
         const denied = await authenticateCronRequest(request);
         if (denied) return denied;
         const { runMessageWorker } = await import("@/server/messages/worker.server");
-        const origin = new URL(request.url).origin;
+        const { publicOrigin } = await import("@/server/public-url");
+        // Links i beskeder bygges på den faste offentlige adresse (PUBLIC_APP_URL), ikke cron-kaldets.
+        const origin = publicOrigin(new URL(request.url).origin);
         try {
           const report = await runMessageWorker(origin, 6000);
           return Response.json({ ok: true, ...report });

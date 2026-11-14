@@ -47,7 +47,11 @@ export const inviteStaffMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(inviteStaffSchema)
   .handler(async ({ data, context }) =>
-    (await staff()).inviteStaff(context, data, getRequestUrl().origin),
+    (await staff()).inviteStaff(
+      context,
+      data,
+      (await import("@/server/public-url")).publicOrigin(getRequestUrl().origin),
+    ),
   );
 
 export const setStaffMemberActive = createServerFn({ method: "POST" })
