@@ -28,7 +28,7 @@ Opdateret: 14. november 2026. Arbejdet ligger på branchen `app-store`. `main` s
 ## Beslutninger, I skal træffe
 
 1. **Apple-konto: DigiSoul Business (besluttet).** Appen oprettes, bygges og indsendes fra DigiSouls team. Sælgernavnet i App Store bliver DigiSouls juridiske navn. Florian Studios betaler ikke for en konto.
-2. **Skriftlig tilladelse fra Florian Studios.** Før indsendelse underskriver Florian Studios en kort erklæring om, at DigiSoul må udgive appen med Florian Studios' navn, logo og indhold (krævet under 5.2.1). Den gemmes og nævnes i App Review-noterne.
+2. **Skriftlig tilladelse fra Florian Studios – modtaget 15/11.** Florian Studios har givet DigiSoul skriftlig tilladelse til at udgive appen med Florian Studios' navn, logo og indhold (5.2.1). Erklæringen opbevares hos DigiSoul (ikke i repoet), nævnes i App Review-noterne og kan sendes til Apple på forespørgsel.
 3. **Domæne.** `book.florianstudio.dk` er valgt. Det sættes op som eget domæne i Lovable med de DNS-poster, Lovable viser. Når det virker med https, sættes secret'en `PUBLIC_APP_URL=https://book.florianstudio.dk` (links i mails, push og invitationer), og appen udgives igen. Først derefter bygges appen til TestFlight/App Store – adressen er bygget ind i appen, og et senere domæneskift kræver en ny app-version og et nyt review.
 4. **Navn i App Store.** Forslag: "Florian Studios" (højst 30 tegn) med undertitlen "Book tid i Herlev". Navnet skal være ledigt i App Store.
 5. **Privatlivspolitik.** Branchen `feat/privacy-gdpr` skal merges og udgives, og de markerede værdier skal bekræftes. Afsnittet om appen i afsnit 5 skal også tilføjes.
