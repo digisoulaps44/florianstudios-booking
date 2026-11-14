@@ -1,11 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Bell, CalendarDays, Clock, X } from "lucide-react";
+import { Bell, CalendarDays, Clock, Trash2, X } from "lucide-react";
+import { useState } from "react";
 
 import { Button, Notice, Spinner } from "@/components/fs/primitives";
 import { PageHeader } from "@/components/fs/staff";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDateShort, formatTime } from "@/lib/format";
+import { notifySuccess } from "@/lib/notify";
 import { useNotifications, type NotificationRow } from "@/lib/staff-data";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +32,21 @@ function Notifications() {
   const q = useNotifications();
   const unread = (q.data ?? []).filter((n) => !n.read_at);
 
+  const read = (q.data ?? []).filter((n) => n.read_at);
+  const [error, setError] = useState<string>();
+  // Hard-delete af egne notifikationer (RLS: staff_id = current_staff_id()).
+  const remove = async (ids: string[], label: string) => {
+    if (ids.length === 0) return;
+    setError(undefined);
+    const { error: e } = await supabase.from("notifications").delete().in("id", ids);
+    if (e) {
+      setError("Notifikationerne kunne ikke slettes. Prøv igen.");
+      return;
+    }
+    notifySuccess(label);
+    await qc.invalidateQueries({ queryKey: ["notifications"] });
+  };
+
   const markRead = async (ids: string[]) => {
     if (ids.length === 0) return;
     await supabase
@@ -45,13 +62,33 @@ function Notifications() {
         eyebrow="Notifikationer"
         title="Beskeder."
         actions={
-          unread.length > 0 ? (
-            <Button variant="ghost" onClick={() => markRead(unread.map((n) => n.id))}>
-              Markér alle som læst
-            </Button>
+          unread.length > 0 || read.length > 0 ? (
+            <div className="flex flex-wrap gap-x-6">
+              {unread.length > 0 ? (
+                <Button variant="ghost" onClick={() => markRead(unread.map((n) => n.id))}>
+                  Markér alle som læst
+                </Button>
+              ) : null}
+              {read.length > 0 ? (
+                <Button
+                  variant="ghost"
+                  onClick={() =>
+                    remove(
+                      read.map((n) => n.id),
+                      read.length === 1
+                        ? "1 læst notifikation slettet"
+                        : `${read.length} læste notifikationer slettet`,
+                    )
+                  }
+                >
+                  Ryd læste
+                </Button>
+              ) : null}
+            </div>
           ) : undefined
         }
       />
+      {error ? <Notice tone="error" title={error} live reveal /> : null}
       {q.isPending ? (
         <Spinner />
       ) : q.isError ? (
@@ -63,7 +100,13 @@ function Notifications() {
       ) : (
         <ul aria-live="polite" className="max-w-text border-y border-line">
           {q.data.map((n, i) => (
-            <Item key={n.id} n={n} first={i === 0} onOpen={() => !n.read_at && markRead([n.id])} />
+            <Item
+              key={n.id}
+              n={n}
+              first={i === 0}
+              onOpen={() => !n.read_at && markRead([n.id])}
+              onDelete={() => remove([n.id], "Notifikationen er slettet")}
+            />
           ))}
         </ul>
       )}
@@ -71,7 +114,17 @@ function Notifications() {
   );
 }
 
-function Item({ n, first, onOpen }: { n: NotificationRow; first: boolean; onOpen: () => void }) {
+function Item({
+  n,
+  first,
+  onOpen,
+  onDelete,
+}: {
+  n: NotificationRow;
+  first: boolean;
+  onOpen: () => void;
+  onDelete: () => void;
+}) {
   const Icon = ICON[n.type] ?? Bell;
   const unread = !n.read_at;
   const body = (
@@ -106,25 +159,34 @@ function Item({ n, first, onOpen }: { n: NotificationRow; first: boolean; onOpen
   );
   const cls = cn(
     "grid grid-cols-[1.25rem_minmax(0,1fr)_auto] gap-4 px-3 py-4",
-    !first && "border-t border-line",
     unread && "bg-bone/10",
   );
   return (
-    <li>
-      {n.booking_id ? (
-        <Link
-          to="/app/booking/$id"
-          params={{ id: n.booking_id }}
-          onClick={onOpen}
-          className={cn(cls, "hover:bg-bone/10")}
-        >
-          {body}
-        </Link>
-      ) : (
-        <button type="button" onClick={onOpen} className={cn(cls, "w-full text-left")}>
-          {body}
-        </button>
-      )}
+    <li className={cn("flex items-stretch", !first && "border-t border-line")}>
+      <div className="min-w-0 flex-1">
+        {n.booking_id ? (
+          <Link
+            to="/app/booking/$id"
+            params={{ id: n.booking_id }}
+            onClick={onOpen}
+            className={cn(cls, "hover:bg-bone/10")}
+          >
+            {body}
+          </Link>
+        ) : (
+          <button type="button" onClick={onOpen} className={cn(cls, "w-full text-left")}>
+            {body}
+          </button>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={onDelete}
+        aria-label={`Slet notifikation: ${n.title}`}
+        className="inline-flex min-h-11 min-w-11 items-center justify-center text-text-muted hover:text-text"
+      >
+        <Trash2 aria-hidden="true" className="h-4 w-4" />
+      </button>
     </li>
   );
 }

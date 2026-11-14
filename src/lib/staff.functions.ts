@@ -5,6 +5,7 @@ import { getRequestUrl } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import {
+  dismissMessageSchema,
   inviteStaffSchema,
   retryMessageSchema,
   setStaffActiveSchema,
@@ -13,6 +14,7 @@ import {
   staffRescheduleSchema,
   staffSetStatusSchema,
   staffSlotsSchema,
+  staffUpdateCustomerSchema,
 } from "./staff-schemas";
 
 const staff = () => import("@/server/staff.server");
@@ -57,6 +59,16 @@ export const retryFailedMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .validator(retryMessageSchema)
   .handler(async ({ data, context }) => (await staff()).retryMessage(context, data));
+
+export const dismissFailedMessage = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(dismissMessageSchema)
+  .handler(async ({ data, context }) => (await staff()).dismissMessage(context, data));
+
+export const updateBookingCustomer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .validator(staffUpdateCustomerSchema)
+  .handler(async ({ data, context }) => (await staff()).staffUpdateCustomer(context, data));
 
 /** Ledige tider set fra medarbejderen: ingen varselsgrænse, egen booking kan udelades ved flytning. */
 export const fetchStaffSlots = createServerFn({ method: "GET" })

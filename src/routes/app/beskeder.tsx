@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/fs/staff";
 import { notifySuccess } from "@/lib/notify";
 import { formatDateShort, formatTime } from "@/lib/format";
 import { useFailedMessages, useMe } from "@/lib/staff-data";
-import { retryFailedMessage } from "@/lib/staff.functions";
+import { dismissFailedMessage, retryFailedMessage } from "@/lib/staff.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/beskeder")({ component: FailedMessages });
@@ -47,6 +47,17 @@ function FailedMessages() {
     await qc.invalidateQueries({ queryKey: ["failed-messages"] });
   };
 
+  const dismiss = async (id: string) => {
+    const r = await dismissFailedMessage({ data: { jobId: id } });
+    if (r.ok) {
+      setMsg(undefined);
+      notifySuccess("Beskeden er afvist", {
+        description: "Den sendes ikke og er fjernet fra listen.",
+      });
+    } else setMsg({ tone: "error", text: r.message });
+    await qc.invalidateQueries({ queryKey: ["failed-messages"] });
+  };
+
   return (
     <>
       <PageHeader eyebrow="Ejer" title="Fejlede beskeder." />
@@ -78,6 +89,9 @@ function FailedMessages() {
                 <div className="flex flex-wrap gap-x-6">
                   <Button variant="secondary" size="sm" onClick={() => retry(j.id)}>
                     Send igen
+                  </Button>
+                  <Button variant="ghost" onClick={() => void dismiss(j.id)}>
+                    Afvis
                   </Button>
                   {j.booking_id ? (
                     <Link
