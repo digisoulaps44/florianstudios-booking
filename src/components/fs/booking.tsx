@@ -52,6 +52,11 @@ export function CustomerShell({ children, bar }: { children: ReactNode; bar?: Re
         )}
       >
         {children}
+        <footer className="mt-16 border-t border-line pt-4 text-xs text-text-muted">
+          <a href="/privatliv" className="underline-offset-4 hover:underline">
+            Privatlivspolitik
+          </a>
+        </footer>
       </main>
       {bar}
     </div>

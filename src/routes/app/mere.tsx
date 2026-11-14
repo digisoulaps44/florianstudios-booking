@@ -36,6 +36,7 @@ function More() {
       label: "Fejlede beskeder",
       hint: "Mail, WhatsApp og push der ikke kom frem",
     },
+    { to: "/app/kunder", label: "Kunder og persondata", hint: "Find og anonymisér en kunde" },
   ];
   return (
     <>

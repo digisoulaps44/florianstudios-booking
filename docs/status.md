@@ -31,6 +31,12 @@ Opdateret: 14. november 2026. Tre kategorier holdes skarpt adskilt: **implemente
 - Danske skabeloner til mail (kunde + medarbejder), WhatsApp og push.
 - Web push (RFC 8291/8292) med WebCrypto, service worker, iPhone-vejledning, håndtering af afviste tilladelser og udløbne abonnementer.
 
+**Privatliv og GDPR** (branch `feat/privacy-gdpr`, ikke merget)
+- `/privatliv` på dansk: dataansvarlig, data, formål, retsgrundlag, opbevaring, databehandlere, rettigheder, sletning, Datatilsynet. Værdier ejeren skal bekræfte er markeret med prikket understregning: adresse, CVR, kontaktmail/-telefon, mailudbyder og opbevaringstid (forslag: 24 mdr. efter seneste booking).
+- Links fra trin 4 (oplysninger), trin 5 (gennemse), `/login` og en diskret footer på alle kundesider.
+- `/app/kunder` (kun ejer, link fra Mere): søg på telefon/mail → "Anonymisér" med bekræftelse.
+- Database (migration `0004_gdpr_customer_search_and_anonymization`, via Lovable): `search_customers` og `anonymize_customer`, begge kun owner, `SECURITY DEFINER`, ingen anon-adgang. Anonymisering bevarer bookingrækker, men erstatter navn/telefon (`anon-<id>`)/mail/note, sletter tokens, annullerer ventende kundebeskeder og rydder modtager, tømmer `booking_events.data`, neutraliserer notifikationstekster og rate limits. **Ikke testet på data endnu.** Automatisk sletning efter opbevaringstiden er ikke bygget.
+
 ## Testet
 
 - `src/lib/availability.test.ts` (20 tests): sommer-/vintertid (29. marts og 25. oktober 2026), arbejdstid og pauser, varigheder, buffer før og efter, ferie, blokeringer, ekstra tid, varsel, ingen dubletter ved tidsskift, telefonnumre, tokens.

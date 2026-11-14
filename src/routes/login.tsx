@@ -131,6 +131,11 @@ function Login() {
             </Button>
           ) : null}
         </form>
+        <p className="mt-10 text-xs text-text-muted">
+          <a href="/privatliv" className="underline-offset-4 hover:underline">
+            Privatlivspolitik
+          </a>
+        </p>
       </div>
     </main>
   );
