@@ -34,6 +34,7 @@ import { Route as BookingTokenRouteImport } from './routes/booking.$token'
 import { Route as AppBookingIdRouteImport } from './routes/app/booking.$id'
 import { Route as ApiPublicCronMessagesRouteImport } from './routes/api/public/cron/messages'
 import { Route as ApiPublicKalenderTokenRouteImport } from './routes/api/public/kalender.$token'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -160,6 +161,12 @@ const ApiPublicKalenderTokenRoute = ApiPublicKalenderTokenRouteImport.update({
   path: '/api/public/kalender/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/app/booking/$id': typeof AppBookingIdRoute
   '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
   '/api/public/kalender/$token': typeof ApiPublicKalenderTokenRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -213,6 +221,7 @@ export interface FileRoutesByTo {
   '/app/booking/$id': typeof AppBookingIdRoute
   '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
   '/api/public/kalender/$token': typeof ApiPublicKalenderTokenRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -241,6 +250,7 @@ export interface FileRoutesById {
   '/app/booking/$id': typeof AppBookingIdRoute
   '/api/public/cron/messages': typeof ApiPublicCronMessagesRoute
   '/api/public/kalender/$token': typeof ApiPublicKalenderTokenRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/app/booking/$id'
     | '/api/public/cron/messages'
     | '/api/public/kalender/$token'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/app/booking/$id'
     | '/api/public/cron/messages'
     | '/api/public/kalender/$token'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -323,6 +335,7 @@ export interface FileRouteTypes {
     | '/app/booking/$id'
     | '/api/public/cron/messages'
     | '/api/public/kalender/$token'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -338,6 +351,7 @@ export interface RootRouteChildren {
   BookingTokenRoute: typeof BookingTokenRoute
   ApiPublicCronMessagesRoute: typeof ApiPublicCronMessagesRoute
   ApiPublicKalenderTokenRoute: typeof ApiPublicKalenderTokenRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -517,6 +531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicKalenderTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -567,6 +588,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookingTokenRoute: BookingTokenRoute,
   ApiPublicCronMessagesRoute: ApiPublicCronMessagesRoute,
   ApiPublicKalenderTokenRoute: ApiPublicKalenderTokenRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

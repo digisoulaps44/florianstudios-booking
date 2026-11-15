@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Booking email uses the managed sender helper with pre-rendered HTML/text and event idempotency keys; preserve the channel signature so the existing worker waits on unverified domains and never retries suppressed recipients.
+- Keep server email credentials out of client defines and allow self-authenticating `/lovable/` email callbacks through request guards so dashboard previews can reach their handlers.
