@@ -33,3 +33,4 @@ use the editor.
 - Keep server email credentials out of client defines and allow self-authenticating `/lovable/` email callbacks through request guards so dashboard previews can reach their handlers.
 - Both online and staff booking creation must await booking-scoped queue dispatch after commit and link creation; preserve atomic SKIP LOCKED claims and provider job-id idempotency, and never fail a committed booking because delivery is unavailable.
 - The managed half-hourly callback is the reminder/retry recovery backstop, not the trigger for new booking confirmations; keep scheduled deadlines and retry counters in the durable queue, and verify its non-secret version header with an unauthorized request before changing live scheduling.
+- Resolve HTML parser dependencies through their package exports without global entities aliases or version overrides; email rendering needs multiple compatible entities majors in the same bundle.
