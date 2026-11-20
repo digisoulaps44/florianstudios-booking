@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createServer, loadConfigFromFile, type ViteDevServer } from "vite";
+import { createElement } from "react";
 
 describe("email dependency resolution", () => {
   let server: ViteDevServer | undefined;
@@ -39,4 +40,17 @@ describe("email dependency resolution", () => {
     const plainText = renderer["toPlainText"]("<p>A &amp; B &#x1F642;</p>");
     expect(plainText.trim()).toBe("A & B 🙂");
   });
+
+  it.each(["@react-email/render", "@react-email/components"])(
+    "renders HTML and plain text through %s without dependency conflicts",
+    async (moduleName) => {
+      if (!server) throw new Error("Vite server was not initialized");
+      const renderer = await server.ssrLoadModule(moduleName);
+      const email = createElement("p", null, "A & B 🙂");
+      const html = await renderer["render"](email);
+      const plainText = await renderer["render"](email, { plainText: true });
+      expect(html).toContain("A &amp; B 🙂");
+      expect(plainText.trim()).toBe("A & B 🙂");
+    },
+  );
 });
