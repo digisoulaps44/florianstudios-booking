@@ -1,5 +1,5 @@
 /**
- * Beskedkøens arbejder. Kaldes af Lovable Cron (POST /api/public/cron/messages) hvert minut.
+ * Beskedkøens arbejder. Kaldes straks efter bookingcommit samt af et sjældnere sikkerhedsnet.
  *
  *  – Bookinger og beskedjobs er gemt i samme transaktion; fejl her kan aldrig annullere en booking.
  *  – claim_message_jobs låser jobs med FOR UPDATE SKIP LOCKED, så to samtidige kørsler aldrig tager
@@ -39,7 +39,11 @@ export type WorkerReport = {
   deferred: number;
 };
 
-export async function runMessageWorker(origin: string, budgetMs = 8000): Promise<WorkerReport> {
+export async function runMessageWorker(
+  origin: string,
+  budgetMs = 8000,
+  bookingId?: string,
+): Promise<WorkerReport> {
   const started = Date.now();
   const report: WorkerReport = {
     claimed: 0,
@@ -50,24 +54,33 @@ export async function runMessageWorker(origin: string, budgetMs = 8000): Promise
     waiting: 0,
     deferred: 0,
   };
-  const { data: jobs, error } = await supabaseAdmin.rpc("claim_message_jobs", { p_limit: 20 });
-  if (error) throw new Error(`claim_message_jobs: ${error.message}`);
-  report.claimed = jobs?.length ?? 0;
+  // Targeted claims prevent another booking's backlog from delaying a new confirmation.
+  do {
+    const { data: jobs, error } = bookingId
+      ? await supabaseAdmin.rpc("claim_booking_message_jobs", {
+          p_booking_id: bookingId,
+          p_limit: 20,
+        })
+      : await supabaseAdmin.rpc("claim_message_jobs", { p_limit: 20 });
+    if (error) throw new Error("Message queue claim failed");
+    report.claimed += jobs?.length ?? 0;
 
-  for (const job of jobs ?? []) {
-    if (Date.now() - started > budgetMs) {
-      // Tiden er brugt – giv jobbet tilbage uden at bruge et forsøg.
-      await update(job, {
-        status: "pending",
-        attempts: Math.max(0, job.attempts - 1),
-        locked_at: null,
-      });
-      report.deferred++;
-      continue;
+    for (const job of jobs ?? []) {
+      if (Date.now() - started > budgetMs) {
+        // Tiden er brugt – giv jobbet tilbage uden at bruge et forsøg.
+        await update(job, {
+          status: "pending",
+          attempts: Math.max(0, job.attempts - 1),
+          locked_at: null,
+        });
+        report.deferred++;
+        continue;
+      }
+      const outcome = await processJob(job, origin);
+      report[outcome]++;
     }
-    const outcome = await processJob(job, origin);
-    report[outcome]++;
-  }
+    if (!jobs || jobs.length < 20) break;
+  } while (Date.now() - started <= budgetMs);
   return report;
 }
 

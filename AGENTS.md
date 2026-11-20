@@ -31,3 +31,5 @@ use the editor.
 
 - Booking email uses the managed sender helper with pre-rendered HTML/text and event idempotency keys; preserve the channel signature so the existing worker waits on unverified domains and never retries suppressed recipients.
 - Keep server email credentials out of client defines and allow self-authenticating `/lovable/` email callbacks through request guards so dashboard previews can reach their handlers.
+- Both online and staff booking creation must await booking-scoped queue dispatch after commit and link creation; preserve atomic SKIP LOCKED claims and provider job-id idempotency, and never fail a committed booking because delivery is unavailable.
+- The managed half-hourly callback is the reminder/retry recovery backstop, not the trigger for new booking confirmations; keep scheduled deadlines and retry counters in the durable queue.

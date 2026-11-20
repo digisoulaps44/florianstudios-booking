@@ -659,6 +659,38 @@ export type Database = {
         }
         Returns: undefined
       }
+      claim_booking_message_jobs: {
+        Args: { p_booking_id: string; p_limit: number }
+        Returns: {
+          attempts: number
+          booking_id: string | null
+          channel: Database["public"]["Enums"]["message_channel"]
+          created_at: string
+          dedupe_key: string
+          delivered_at: string | null
+          failed_at: string | null
+          id: string
+          last_error: string | null
+          locked_at: string | null
+          max_attempts: number
+          provider_message_id: string | null
+          read_at: string | null
+          recipient: string | null
+          recipient_kind: string
+          recipient_staff_id: string | null
+          scheduled_for: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["message_status"]
+          template: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "message_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       claim_message_jobs: {
         Args: { p_limit: number }
         Returns: {

@@ -43,6 +43,13 @@
       "when": 1794678032448,
       "tag": "0005_staff_photos_authenticated_select",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795196295308,
+      "tag": "0006_claim_booking_message_jobs",
+      "breakpoints": true
     }
   ]
 }

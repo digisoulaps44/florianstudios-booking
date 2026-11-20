@@ -24,6 +24,7 @@ import type {
 
 import { loadBookableStaffTreatment, loadSettings, slotsForDays } from "./availability.server";
 import { ensureBookingToken, fail, type Failure } from "./public-booking.server";
+import { dispatchBookingMessages } from "./messages/dispatch.server";
 
 type Ctx = { supabase: SupabaseClient<Database>; userId: string };
 
@@ -133,6 +134,7 @@ export async function staffCreateBooking(
   if (f) return f;
   if (error || !data?.[0]) throw new Error(`create_booking: ${error?.message}`);
   await ensureBookingToken(data[0].booking_id, startsAt);
+  await dispatchBookingMessages(data[0].booking_id);
   return { ok: true as const, bookingId: data[0].booking_id };
 }
 
@@ -300,7 +302,7 @@ export async function retryMessage(ctx: Ctx, input: z.output<typeof retryMessage
   if (!(await requireOwner(ctx))) return fail("not_found", "Kun ejeren kan sende beskeder igen.");
   const { data: job } = await ctx.supabase
     .from("message_jobs")
-    .select("id, status")
+    .select("id, status, booking_id")
     .eq("id", input.jobId)
     .maybeSingle();
   if (!job) return fail("not_found", "Beskeden findes ikke.");
@@ -317,6 +319,7 @@ export async function retryMessage(ctx: Ctx, input: z.output<typeof retryMessage
     .eq("id", job.id)
     .eq("status", "failed");
   if (error) throw new Error(error.message);
+  if (job.booking_id) await dispatchBookingMessages(job.booking_id);
   return { ok: true as const };
 }
 

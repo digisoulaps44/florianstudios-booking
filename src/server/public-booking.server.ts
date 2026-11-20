@@ -28,6 +28,7 @@ import {
   type DayStatus,
 } from "./availability.server";
 import { bookingLinkToken, bookingLinkTokenHash } from "./links.server";
+import { dispatchBookingMessages } from "./messages/dispatch.server";
 
 // ── Fejl som data (UI viser danske tekster) ──────────────────────────────
 export type Failure = { ok: false; code: FailureCode; message: string };
@@ -389,6 +390,7 @@ export async function createBooking(
 
   const bookingId = data[0].booking_id;
   await ensureBookingToken(bookingId, startsAt);
+  await dispatchBookingMessages(bookingId);
   const summary = await loadSummary(bookingId);
   if (!summary) throw new Error("Bookingen blev oprettet, men kunne ikke læses igen.");
   return { ok: true, booking: summary, manageToken: await bookingLinkToken(bookingId) };

@@ -3,8 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { authenticateCronRequest } from "@/integrations/supabase/cron-auth";
 
 /**
- * Lovable Cron kalder denne route hvert minut (Lovables planlægger kræver stier under /api/public/) (POST, Authorization: Bearer LOVABLE_CRON_SECRET).
- * Kaldet skal svare hurtigt, så arbejderen har et tidsbudget og efterlader resten til næste minut.
+ * Lovable Cron kalder denne route hver halve time til påmindelser og genforsøg.
+ * Nye bekræftelser sendes direkte efter bookingcommit. Alle kald kræver den administrerede cron-godkendelse.
  */
 export const Route = createFileRoute("/api/public/cron/messages")({
   server: {
